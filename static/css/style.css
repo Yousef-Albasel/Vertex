@@ -1,0 +1,313 @@
+/* Reset and Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background: #f4f4f4;
+}
+
+/* Navigation */
+.navbar {
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 60px;
+}
+
+.nav-logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-decoration: none;
+    color: #333;
+}
+
+.nav-menu {
+    display: flex;
+    list-style: none;
+    gap: 30px;
+}
+
+.nav-menu a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+}
+
+.nav-menu a:hover {
+    color: #007acc;
+}
+
+/* Hero Section */
+.hero {
+    text-align: center;
+    padding: 120px 20px 80px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.hero-image {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 20px;
+    border: 4px solid white;
+}
+
+.hero h1 {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+.hero p {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+}
+
+.contact a {
+    background: white;
+    color: #667eea;
+    padding: 12px 24px;
+    text-decoration: none;
+    border-radius: 25px;
+    font-weight: bold;
+    transition: transform 0.3s;
+}
+
+.contact a:hover {
+    transform: translateY(-2px);
+}
+
+/* Latest Posts Cards */
+.latest-posts {
+    max-width: 1200px;
+    margin: 60px auto;
+    padding: 0 20px;
+}
+
+.latest-posts h2 {
+    text-align: center;
+    margin-bottom: 40px;
+    color: #333;
+}
+
+.post-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-bottom: 60px;
+}
+
+.post-card {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
+}
+
+.post-card:hover {
+    transform: translateY(-5px);
+}
+
+.post-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.post-card h3 {
+    padding: 20px 20px 10px;
+    color: #333;
+}
+
+.post-card p {
+    padding: 0 20px;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.post-card a {
+    display: block;
+    padding: 0 20px 20px;
+    color: #007acc;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+/* All Posts List */
+.all-posts {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+}
+
+.all-posts h2 {
+    text-align: center;
+    margin-bottom: 40px;
+    color: #333;
+}
+
+.posts-list {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.post-item {
+    padding: 30px;
+    border-bottom: 1px solid #eee;
+}
+
+.post-item:last-child {
+    border-bottom: none;
+}
+
+.post-item h3 a {
+    color: #333;
+    text-decoration: none;
+    font-size: 1.3rem;
+}
+
+.post-item h3 a:hover {
+    color: #007acc;
+}
+
+.post-item p {
+    color: #666;
+    margin: 10px 0;
+}
+
+.post-item time {
+    color: #999;
+    font-size: 0.9rem;
+}
+
+/* Single Post Styles */
+.post {
+    max-width: 800px;
+    margin: 80px auto;
+    padding: 0 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.post-header {
+    padding: 40px 40px 0;
+    text-align: center;
+}
+
+.post-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.post-meta {
+    margin-bottom: 30px;
+    color: #666;
+}
+
+.post-meta .category {
+    background: #007acc;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    margin-left: 15px;
+}
+
+.post-image {
+    width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 30px;
+}
+
+.post-content {
+    padding: 0 40px;
+    line-height: 1.8;
+}
+
+.post-content h2, .post-content h3 {
+    margin: 30px 0 15px;
+    color: #333;
+}
+
+.post-content p {
+    margin-bottom: 20px;
+}
+
+.post-content code {
+    background: #f4f4f4;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+}
+
+.post-content pre {
+    background: #f4f4f4;
+    padding: 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 20px 0;
+}
+
+.post-footer {
+    padding: 40px;
+    text-align: center;
+}
+
+.back-link {
+    color: #007acc;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .nav-menu {
+        gap: 15px;
+    }
+    
+    .hero h1 {
+        font-size: 2rem;
+    }
+    
+    .post-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .post-header h1 {
+        font-size: 2rem;
+    }
+    
+    .post-content, .post-header, .post-footer {
+        padding: 20px;
+    }
+}

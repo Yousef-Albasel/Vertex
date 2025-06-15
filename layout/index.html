@@ -1,0 +1,67 @@
+<!-- layout/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ site.name }}</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">{{ site.name }}</a>
+            <ul class="nav-menu">
+                <li><a href="/about">About</a></li>
+                <li><a href="/posts">Posts</a></li>
+                <li><a href="/categories">Categories</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <img src="{{ site.avatar }}" alt="{{ site.name }}" class="hero-image">
+        <h1>{{ site.name }}</h1>
+        <p>{{ site.description }}</p>
+        <div class="contact">
+            <a href="mailto:{{ site.email }}">Contact</a>
+        </div>
+    </section>
+
+    <!-- Latest Posts Cards -->
+    <section class="latest-posts">
+        <h2>Latest Posts</h2>
+        <div class="post-cards">
+            {% for post in latestPosts %}
+            <div class="post-card">
+                <img src="{{ post.image }}" alt="{{ post.title }}">
+                <h3>{{ post.title }}</h3>
+                <p>{{ post.description }}</p>
+                <a href="{{ post.url }}">Read More</a>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- All Posts List -->
+    <section class="all-posts">
+        <h2>All Posts</h2>
+        <div class="posts-list">
+            {% for post in posts %}
+            <article class="post-item">
+                <h3><a href="{{ post.url }}">{{ post.title }}</a></h3>
+                <p>{{ post.description }}</p>
+                <time>{{ post.date }}</time>
+            </article>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        <div class="pagination">
+            <!-- We'll implement this later -->
+        </div>
+    </section>
+</body>
+</html>

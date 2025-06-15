@@ -1,0 +1,45 @@
+<!-- layout/post.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - {{ site.name }}</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">{{ site.name }}</a>
+            <ul class="nav-menu">
+                <li><a href="/about">About</a></li>
+                <li><a href="/posts">Posts</a></li>
+                <li><a href="/categories">Categories</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Post Content -->
+    <article class="post">
+        <header class="post-header">
+            <h1>{{ title }}</h1>
+            <div class="post-meta">
+                <time>{{ date }}</time>
+                {% if category %}<span class="category">{{ category }}</span>{% endif %}
+            </div>
+            {% if image %}
+            <img src="{{ image }}" alt="{{ title }}" class="post-image">
+            {% endif %}
+        </header>
+        
+        <div class="post-content">
+            {{ content | safe }}
+        </div>
+        
+        <footer class="post-footer">
+            <a href="/" class="back-link">← Back to Home</a>
+        </footer>
+    </article>
+</body>
+</html>

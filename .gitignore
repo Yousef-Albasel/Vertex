@@ -1,0 +1,5 @@
+public/*.html
+node_modules
+content/*.md
+package-lock.json
+config.json
