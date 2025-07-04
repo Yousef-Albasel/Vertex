@@ -6,45 +6,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ site.name }}</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Navigation -->
+    <!-- Navigation Bar -->
     <nav class="navbar">
-        <div class="nav-container">
-            <a href="/" class="nav-logo">{{ site.name }}</a>
-            <ul class="nav-menu">
-                <li><a href="/about">About</a></li>
-                <li><a href="/posts">Posts</a></li>
-                <li><a href="/categories">Categories</a></li>
+        <div class="navbar-container">
+            <a href="/" class="navbar-title">{{ site.name }}</a>
+            <ul class="navbar-links">
+                <li><a href="/posts.html">Posts</a></li>
+                <li><a href="/categories.html">Categories</a></li>
+                <li><a href="/about.html">About Me</a></li>
             </ul>
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+                <i class="fa-solid fa-moon" id="theme-icon"></i>
+            </button>
         </div>
     </nav>
-
+    <div class="container">
     <!-- Hero Section -->
     <section class="hero">
         <img src="{{ site.avatar }}" alt="{{ site.name }}" class="hero-image">
         <h1>{{ site.name }}</h1>
         <p>{{ site.description }}</p>
-        <div class="contact">
-            <a href="mailto:{{ site.email }}">Contact</a>
+        <div class="hero-contact">
+            <div class="hero-socials">
+                {% for s in site.social %}
+                    <a href="{{ s.url }}" target="_blank" rel="noopener" aria-label="social link"><i class="{{ s.icon }}"></i></a>
+                {% endfor %}
+            </div>
         </div>
     </section>
 
     <!-- Latest Posts Cards -->
-    <section class="latest-posts">
-        <h2>Latest Posts</h2>
-        <div class="post-cards">
-            {% for post in latestPosts %}
-            <div class="post-card">
-                <img src="{{ post.image }}" alt="{{ post.title }}">
-                <h3>{{ post.title }}</h3>
-                <p>{{ post.description }}</p>
-                <a href="{{ post.url }}">Read More</a>
-            </div>
-            {% endfor %}
-        </div>
+    <section class="main-section">
+    <section class="quick-links">
+    <h4>Quick Links</h4>
+    <ul>
+        {% for li in links %}
+        <li>
+            {% if li.icon %}<i class="{{ li.icon }}"></i> {% endif %}
+            <a href="{{ li.href }}">{{ li.label }}</a>
+        </li>
+        {% endfor %}
+    </ul>
     </section>
 
+        <section class="latest-posts">
+            <h2>Latest Posts</h2>
+            <div class="post-cards">
+                {% for post in latestPosts %}
+                <div class="post-card">
+                    <img src="{{ post.image }}" alt="{{ post.title }}">
+                    <div class="card-info">
+                        <span class="post-category">{{post.category}}</span>
+                        <h3>{{ post.title }}</h3>
+                        <p>{{ post.description }}</p>
+                        <a href="{{ post.url }}">READ MORE</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </section>
     <!-- All Posts List -->
     <section class="all-posts">
         <h2>All Posts</h2>
@@ -63,5 +87,24 @@
             <!-- We'll implement this later -->
         </div>
     </section>
+    </div>  
+    <script>
+    // Dark/Light mode toggle
+    const toggleBtn = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+    function setTheme(mode) {
+        document.body.classList.toggle('dark-mode', mode === 'dark');
+        themeIcon.className = mode === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        localStorage.setItem('theme', mode);
+    }
+    toggleBtn.addEventListener('click', () => {
+        const isDark = document.body.classList.toggle('dark-mode');
+        themeIcon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    });
+    // On load
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') setTheme('dark');
+    </script>
 </body>
 </html>

@@ -22,25 +22,21 @@
         </div>
     </nav>
     <div class="container">
-    <!-- Post Content -->
-    <article class="post">
-        <header class="post-header">
+    <!-- Page Content -->
+    <main class="page">
+        <header class="page-header">
             <h1>{{ title }}</h1>
-            <div class="post-meta">
-                <time>{{ date }}</time>
-                {% if category %}<span class="category">{{ category }}</span>{% endif %}
-            </div>
-            {% if image %}
-            <img src="{{ image }}" alt="{{ title }}" class="post-image">
+            {% if description %}
+            <p class="page-description">{{ description }}</p>
             {% endif %}
         </header>
-        <div class="post-content">
+        <div class="page-content">
             {{ content | safe }}
         </div>
-        <footer class="post-footer">
+        <footer class="page-footer">
             <a href="/" class="back-link">&larr; Back to Home</a>
         </footer>
-    </article>
+    </main>
     </div>
     <script>
     const toggleBtn = document.getElementById('theme-toggle');

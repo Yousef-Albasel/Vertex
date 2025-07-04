@@ -22,25 +22,29 @@
         </div>
     </nav>
     <div class="container">
-    <!-- Post Content -->
-    <article class="post">
-        <header class="post-header">
+    <!-- Categories Index -->
+    <main class="categories-page">
+        <header class="page-header">
             <h1>{{ title }}</h1>
-            <div class="post-meta">
-                <time>{{ date }}</time>
-                {% if category %}<span class="category">{{ category }}</span>{% endif %}
-            </div>
-            {% if image %}
-            <img src="{{ image }}" alt="{{ title }}" class="post-image">
-            {% endif %}
+            <p>Explore posts by category</p>
         </header>
-        <div class="post-content">
-            {{ content | safe }}
+        <div class="categories-grid">
+            {% for category in categories %}
+            <div class="category-card">
+                <h2><a href="/categories/{{ category.slug }}.html">{{ category.name }}</a></h2>
+                <p>{{ category.count }} posts</p>
+                <div class="category-posts-preview">
+                    {% for post in category.posts | slice(0, 3) %}
+                    <a href="{{ post.url }}" class="category-post-link">{{ post.title }}</a>
+                    {% endfor %}
+                    {% if category.posts.length > 3 %}
+                    <span class="more-posts">and {{ category.posts.length - 3 }} more...</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
         </div>
-        <footer class="post-footer">
-            <a href="/" class="back-link">&larr; Back to Home</a>
-        </footer>
-    </article>
+    </main>
     </div>
     <script>
     const toggleBtn = document.getElementById('theme-toggle');
