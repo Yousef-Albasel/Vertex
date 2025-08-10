@@ -18,10 +18,10 @@ program
     .option('-d, --dir <directory>', 'Project directory', '.')
     .action(async (options) => {
         try {
-            console.log('🔨 Building site...');
+            console.log('Building site...');
             await build(options.dir);
         } catch (error) {
-            console.error('❌ Build failed:', error.message);
+            console.error('Build failed:', error.message);
             process.exit(1);
         }
     });

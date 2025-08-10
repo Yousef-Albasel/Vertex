@@ -4,7 +4,8 @@ const chokidar = require('chokidar');
 const build = require('./build');
 
 async function serve(projectDir = '.', port = 3000) {
-    const publicDir = path.join(projectDir, 'public');
+    // Make sure publicDir is absolute
+    const publicDir = path.resolve(projectDir, 'public');
     
     console.log('Building site for first time...');
     await build(projectDir);
@@ -14,7 +15,7 @@ async function serve(projectDir = '.', port = 3000) {
     // Handle clean URLs (remove .html extension)
     app.use((req, res, next) => {
         if (req.path.indexOf('.') === -1 && req.path !== '/') {
-            const htmlPath = path.join(publicDir, req.path + '.html');
+            const htmlPath = path.resolve(publicDir, req.path.slice(1) + '.html');
             res.sendFile(htmlPath, (err) => {
                 if (err) {
                     next(); // Continue to 404 handler
@@ -23,6 +24,38 @@ async function serve(projectDir = '.', port = 3000) {
         } else {
             next();
         }
+    });
+    
+    app.get('/', (req, res) => {
+        res.sendFile(path.resolve(publicDir, 'index.html'));
+    });
+
+    // Handle /posts route
+    app.get('/posts', (req, res) => {
+        res.sendFile(path.resolve(publicDir, 'posts.html'));
+    });
+
+    // Handle /categories route
+    app.get('/categories', (req, res) => {
+        res.sendFile(path.resolve(publicDir, 'categories.html'));
+    });
+
+    // Handle /about route
+    app.get('/aboutme', (req, res) => {
+        res.sendFile(path.resolve(publicDir, 'aboutme.html'));
+    });
+
+    app.get('/categories/:category', (req, res) => {
+        const categoryFile = path.resolve(publicDir, 'categories', `${req.params.category}.html`);
+        res.sendFile(categoryFile, (err) => {
+            if (err) {
+                res.status(404).sendFile(path.resolve(publicDir, '404.html'), (err2) => {
+                    if (err2) {
+                        res.status(404).send('Category not found');
+                    }
+                });
+            }
+        });
     });
     
     // 404 handler
@@ -75,6 +108,7 @@ async function serve(projectDir = '.', port = 3000) {
     
     const watchPaths = [
         path.join(projectDir, 'content'),
+        path.join(projectDir, 'pages'), // Add this line to watch pages directory
         path.join(projectDir, 'layout'),
         path.join(projectDir, 'static'),
         path.join(projectDir, 'config.json')

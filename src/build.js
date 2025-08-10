@@ -31,11 +31,31 @@ async function build(projectDir = '.'){
         const posts = await processMarkdownFiles(projectDir);
         console.log(`Processed ${posts.length} posts successfully`);
         
+        // Process standalone pages (about, etc.)
+        const pages = await processPages(projectDir);
+        console.log(`Processed ${pages.length} pages successfully`);
+        
         await generatePostPages(posts, env, config, outputDir);
         console.log('Post pages generated successfully');
         
+        await generatePageFiles(pages, env, config, outputDir);
+        console.log('Static pages generated successfully');
+        
         await generateHomePage(posts, env, config, outputDir);
         console.log('Home page generated successfully');
+        
+        // Generate posts listing page
+        await generatePostsListingPage(posts, env, config, outputDir);
+        console.log('Posts listing page generated successfully');
+        await generateAboutMePage(projectDir, config, outputDir);
+        
+        // Generate category pages
+        await generateCategoryPages(posts, env, config, outputDir);
+        console.log('Category pages generated successfully');
+
+        // Generate categories index page
+        await generateCategoriesIndexPage(posts, env, config, outputDir);
+        console.log('Categories index page generated successfully');
         
         console.log('Build completed successfully!');
     }
@@ -102,7 +122,7 @@ async function processMarkdownFiles(projectDir){
             description:frontMatter.description||'',
             date:frontMatter.date||new Date().toISOString().split('T')[0],
             category:frontMatter.category||'',
-            image:frontMatter.category||'',
+            image:frontMatter.image||'',
             layout: frontMatter.layout || 'post',
             content: htmlContent,
             url: `/${slug}.html`,
@@ -113,6 +133,47 @@ async function processMarkdownFiles(projectDir){
     }
     posts.sort((a,b)=>new Date(b.date) - new Date(a.date));
     return posts;
+}
+
+async function generateAboutMePage(projectDir, siteConfig, outputDir) {
+    const nunjucksEnv = setupTemplating(projectDir);
+    const html = nunjucksEnv.render('aboutme.html', { site: siteConfig });
+    await fs.outputFile(path.join(outputDir, 'aboutme.html'), html);
+}
+
+async function processPages(projectDir) {
+    const pagesDir = path.join(projectDir, 'pages');
+    const pages = [];
+    
+    if (!(await fs.pathExists(pagesDir))) {
+        console.log('No pages directory found, skipping..');
+        return pages;
+    }
+    
+    const files = await fs.readdir(pagesDir);
+    const markdownFiles = files.filter(file => file.endsWith('.md'));
+
+    for (const file of markdownFiles) {
+        const filePath = path.join(pagesDir, file);
+        const fileContent = await fs.readFile(filePath, "utf8");
+        const { data: frontMatter, content } = matter(fileContent);
+        const htmlContent = md.render(content);
+        
+        const slug = path.basename(file, '.md');
+        const page = {
+            slug,
+            title: frontMatter.title || slug,
+            description: frontMatter.description || '',
+            layout: frontMatter.layout || 'page',
+            content: htmlContent,
+            url: `/${slug}.html`,
+            frontMatter,
+            ...frontMatter
+        };
+        pages.push(page);
+    }
+    
+    return pages;
 }
 
 async function generatePostPages(posts,env,config,outputDir){
@@ -135,23 +196,136 @@ async function generatePostPages(posts,env,config,outputDir){
     }
 }
 
+async function generatePageFiles(pages, env, config, outputDir) {
+    for (const page of pages) {
+        const templateName = `${page.layout}.html`;
+        
+        try {
+            const html = env.render(templateName, {
+                ...page,
+                site: config
+            });
+            
+            const outputPath = path.join(outputDir, `${page.slug}.html`);
+            await fs.writeFile(outputPath, html);
+            
+        } catch (error) {
+            console.error(`Error generating page for ${page.slug}:`, error.message);
+        }
+    }
+}
+
 async function generateHomePage(posts, env, config, outputDir) {
     try {
         // Get latest posts for cards (first 6)
         const latestPosts = posts.slice(0, 6);
+        const quickLinks = Object.entries(config.links).map(([label, obj]) => ({
+            label,
+            href: obj.href,
+            icon: obj.icon || null
+        }));
         
         // Render home page
         const html = env.render('index.html', {
             site: config,
             posts: posts,
-            latestPosts: latestPosts
+            latestPosts: latestPosts,
+            links: quickLinks
         });
-        
+
         const outputPath = path.join(outputDir, 'index.html');
         await fs.writeFile(outputPath, html);
         
     } catch (error) {
         console.error('Error generating home page:', error.message);
+        throw error;
+    }
+}
+
+async function generatePostsListingPage(posts, env, config, outputDir) {
+    try {
+        const html = env.render('posts.html', {
+            site: config,
+            posts: posts,
+            title: 'All Posts'
+        });
+        
+        const outputPath = path.join(outputDir, 'posts.html');
+        await fs.writeFile(outputPath, html);
+        
+    } catch (error) {
+        console.error('Error generating posts listing page:', error.message);
+        throw error;
+    }
+}
+
+async function generateCategoryPages(posts, env, config, outputDir) {
+    // Group posts by category
+    const postsByCategory = {};
+    
+    posts.forEach(post => {
+        if (post.category) {
+            if (!postsByCategory[post.category]) {
+                postsByCategory[post.category] = [];
+            }
+            postsByCategory[post.category].push(post);
+        }
+    });
+    
+    // Create category directory
+    const categoryDir = path.join(outputDir, 'categories');
+    await fs.ensureDir(categoryDir);
+    
+    // Generate individual category pages
+    for (const [category, categoryPosts] of Object.entries(postsByCategory)) {
+        try {
+            const html = env.render('category.html', {
+                site: config,
+                posts: categoryPosts,
+                category: category,
+                title: `Posts in ${category}`
+            });
+            
+            const outputPath = path.join(categoryDir, `${category.toLowerCase().replace(/\s+/g, '-')}.html`);
+            await fs.writeFile(outputPath, html);
+            
+        } catch (error) {
+            console.error(`Error generating category page for ${category}:`, error.message);
+        }
+    }
+}
+
+async function generateCategoriesIndexPage(posts, env, config, outputDir) {
+    // Group posts by category and count them
+    const categories = {};
+    
+    posts.forEach(post => {
+        if (post.category) {
+            if (!categories[post.category]) {
+                categories[post.category] = {
+                    name: post.category,
+                    count: 0,
+                    posts: [],
+                    slug: post.category.toLowerCase().replace(/\s+/g, '-')
+                };
+            }
+            categories[post.category].count++;
+            categories[post.category].posts.push(post);
+        }
+    });
+    
+    try {
+        const html = env.render('categories.html', {
+            site: config,
+            categories: Object.values(categories),
+            title: 'Categories'
+        });
+        
+        const outputPath = path.join(outputDir, 'categories.html');
+        await fs.writeFile(outputPath, html);
+        
+    } catch (error) {
+        console.error('Error generating categories index page:', error.message);
         throw error;
     }
 }

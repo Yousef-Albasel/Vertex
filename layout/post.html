@@ -8,19 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="navbar-container">
-            <a href="/" class="navbar-title">{{ site.name }}</a>
-            <ul class="navbar-links">
-                <li><a href="/posts.html">Posts</a></li>
-                <li><a href="/categories.html">Categories</a></li>
-                <li><a href="/about.html">About Me</a></li>
-            </ul>
-            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
-                <i class="fa-solid fa-moon" id="theme-icon"></i>
-            </button>
-        </div>
-    </nav>
+    {% include "_navbar.html" %}
+
     <div class="container">
     <!-- Post Content -->
     <article class="post">
