@@ -49,6 +49,7 @@ export default function Toolbar({
     onInsert('\n```\ncode here\n```\n');
   };
 
+  
   return (
     <div className={`flex items-center gap-1 p-2 border-b flex-wrap ${
       isDarkMode 
@@ -72,20 +73,6 @@ export default function Toolbar({
       ))}
       
       <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1"></div>
-      
-      <button
-        onClick={handleCodeBlock}
-        className={`p-2 rounded transition-colors ${
-          isDarkMode
-            ? 'hover:bg-gray-700 text-gray-300'
-            : 'hover:bg-gray-200 text-gray-700'
-        }`}
-        title="Code Block"
-        disabled={!selectedFile}
-      >
-        <Code size={16} />
-        <span className="ml-1 text-xs">Block</span>
-      </button>
       
       <div className="ml-auto flex gap-2">
         <button

@@ -119,7 +119,7 @@ export default function Sidebar({ files, selectedFile, onFileSelect, onCreateFil
   };
 
   return (
-    <div className={`w-64 flex flex-col border-r ${
+    <div className={`w-64 flex flex-col border-r h-full ${
       isDarkMode 
         ? 'bg-gray-800 border-gray-700' 
         : 'bg-gray-100 border-gray-200'

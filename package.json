@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/Yousef-Albasel/Vertex#readme",
   "dependencies": {
+    "buffer": "^6.0.3",
     "chokidar": "^3.6.0",
     "commander": "^14.0.0",
     "cors": "^2.8.5",

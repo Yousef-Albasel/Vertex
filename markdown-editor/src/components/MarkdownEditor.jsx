@@ -22,7 +22,29 @@ export default function MarkdownEditor({ value, onChange, onInsert, isDarkMode }
     }, 0);
   };
 
-  // Pass handleInsert to parent component
+  const handleKeyDown = (e) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const currentValue = value || '';
+      
+      const beforeCursor = currentValue.slice(0, start);
+      const afterCursor = currentValue.slice(end);
+      const newValue = beforeCursor + '\n' + afterCursor;
+      
+      onChange(newValue);
+      
+      setTimeout(() => {
+        textarea.setSelectionRange(start + 1, start + 1);
+      }, 0);
+    }
+  };
+
   useEffect(() => {
     if (onInsert) {
       onInsert.current = handleInsert;
@@ -37,8 +59,18 @@ export default function MarkdownEditor({ value, onChange, onInsert, isDarkMode }
           ? 'bg-gray-900 text-gray-100 placeholder-gray-400' 
           : 'bg-white text-gray-900 placeholder-gray-500'
       }`}
+      style={{
+        wordWrap: 'break-word',
+        whiteSpace: 'pre-wrap',
+        overflowWrap: 'break-word',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        minHeight: '100%',
+        boxSizing: 'border-box'
+      }}
       value={value || ''}
       onChange={(e) => onChange(e.target.value)}
+      onKeyDown={handleKeyDown}
       placeholder="Start typing your markdown here..."
     />
   );
