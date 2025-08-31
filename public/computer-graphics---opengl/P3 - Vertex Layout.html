@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }} - {{ site.name }}</title>
+    <title>P3 Vertex Layout - Albasel</title>
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -85,70 +85,110 @@
     </style>
 </head>
 <body>
-    {% include "_navbar.html" %}
+    <nav class="navbar">
+    <div class="navbar-container">
+        <a href="/" class="navbar-title">Albasel</a>
+        <ul class="navbar-links">
+            <li><a href="/posts.html">Posts</a></li>
+            <li><a href="/categories.html">Categories</a></li>
+            <li><a href="/aboutme.html">About Me</a></li>
+        </ul>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+            <i class="fa-solid fa-moon" id="theme-icon"></i>
+        </button>
+    </div>
+</nav>
 
     <div class="container">
         <!-- Series Info (if post is part of a series) -->
-        {% if seriesInfo %}
+        
         <div class="series-info">
             <div>
                 <i class="fas fa-book"></i>
-                <strong>Part {{ seriesInfo.currentIndex }} of {{ seriesInfo.totalPosts }}</strong> in
-                <a href="/{{ seriesInfo.slug }}/">{{ seriesInfo.title }}</a>
+                <strong>Part 4 of 11</strong> in
+                <a href="/computer-graphics---opengl/">Computer Graphics - OpenGL</a>
             </div>
             <div class="series-progress">
-                {{ seriesInfo.currentIndex }}/{{ seriesInfo.totalPosts }}
+                4/11
             </div>
         </div>
-        {% endif %}
+        
 
         <!-- Post Content -->
         <article class="post">
             <header class="post-header">
-                <h1>{{ title }}</h1>
+                <h1>P3 Vertex Layout</h1>
                 <div class="post-meta">
-                    <time>{{ date }}</time>
-                    {% if category %}<span class="category">{{ category }}</span>{% endif %}
-                    {% if series %}<span class="series-tag"><i class="fas fa-book"></i> Series</span>{% endif %}
+                    <time>2024-01-01</time>
+                    <span class="category">OpenGL</span>
+                    <span class="series-tag"><i class="fas fa-book"></i> Series</span>
                 </div>
-                {% if image %}
-                <img src="{{ image }}" alt="{{ title }}" class="post-image">
-                {% endif %}
+                
+                <img src="/images/opengl.jpg" alt="P3 Vertex Layout" class="post-image">
+                
             </header>
             <div class="post-content">
-                {{ content | safe }}
+                <h3>Vertex Layout</h3>
+<p>A vertex is not a position, it can contain more data than just position, but most of the time it’s a position, it can be polynomials, tangents,trignometry or other things.</p>
+<p>Now that we created a buffer, filled it with data we need to tell OpenGL that we are now trying to create a 2D Layout</p>
+<h5>glEnableVertexAttribArray(0);</h5>
+<p>This line enables the generic vertex attribute array with index 0. In OpenGL, a vertex attribute array is a set of attributes associated with a vertex. By enabling it, you’re indicating that data for this attribute will be sourced from an array.</p>
+<h5>glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);</h5>
+<p>This function call defines an array of vertex attribute data. Breaking it down:</p>
+<ul>
+<li>
+<p>0 specifies that this attribute is associated with index 0, which matches the index enabled with glEnableVertexAttribArray(0).</p>
+</li>
+<li>
+<p>2 indicates that each vertex attribute is composed of two components (in this case, x and y for 2D coordinates).</p>
+</li>
+<li>
+<p>GL_FLOAT specifies the type of data in the array (float in this case).</p>
+</li>
+<li>
+<p>GL_FALSE indicates whether the data should be normalized. In this case, it’s set to false.</p>
+</li>
+<li>
+<p>sizeof(float) * 2 is the stride, which specifies the byte offset between consecutive generic vertex attributes. It tells OpenGL the size of each vertex in memory.</p>
+</li>
+<li>
+<p>0 is the pointer offset. It specifies the offset of the first component of the first generic vertex attribute in the array.</p>
+</li>
+</ul>
+<pre><code class="language-c">
+    // Now we need to tell OpenGL how our data is laid out, is it a 2D Vector or 3D...
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2,0);
+
+</code></pre>
+
             </div>
             
             <!-- Series Navigation (if post is part of a series) -->
-            {% if seriesInfo %}
+            
             <nav class="series-navigation">
-                {% if seriesInfo.previousPost %}
-                    <a href="{{ seriesInfo.previousPost.url }}" class="nav-link">
-                        <span class="nav-link-label"><i class="fas fa-arrow-left"></i> Previous</span>
-                        <span class="nav-link-title">{{ seriesInfo.previousPost.title }}</span>
-                    </a>
-                {% else %}
-                    <div class="nav-placeholder"></div>
-                {% endif %}
                 
-                {% if seriesInfo.nextPost %}
-                    <a href="{{ seriesInfo.nextPost.url }}" class="nav-link" style="text-align: right;">
-                        <span class="nav-link-label">Next <i class="fas fa-arrow-right"></i></span>
-                        <span class="nav-link-title">{{ seriesInfo.nextPost.title }}</span>
+                    <a href="/computer-graphics---opengl/P2 - Vertex Buffers.html" class="nav-link">
+                        <span class="nav-link-label"><i class="fas fa-arrow-left"></i> Previous</span>
+                        <span class="nav-link-title">P2 Vertex Buffers</span>
                     </a>
-                {% else %}
-                    <div class="nav-placeholder"></div>
-                {% endif %}
+                
+                
+                
+                    <a href="/computer-graphics---opengl/P4.1 - Shaders.html" class="nav-link" style="text-align: right;">
+                        <span class="nav-link-label">Next <i class="fas fa-arrow-right"></i></span>
+                        <span class="nav-link-title">P4.1 Shaders</span>
+                    </a>
+                
             </nav>
-            {% endif %}
+            
             
             <footer class="post-footer">
-                {% if series %}
-                    <a href="/{{ series }}/" class="back-link"><i class="fas fa-book"></i> Back to {{ seriesInfo.title if seriesInfo else 'Series' }}</a>
+                
+                    <a href="/computer-graphics---opengl/" class="back-link"><i class="fas fa-book"></i> Back to Computer Graphics - OpenGL</a>
                     <a href="/" class="back-link">&larr; Back to Home</a>
-                {% else %}
-                    <a href="/" class="back-link">&larr; Back to Home</a>
-                {% endif %}
+                
             </footer>
         </article>
     </div>

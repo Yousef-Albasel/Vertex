@@ -28,8 +28,9 @@ async function build(projectDir = '.'){
         await copyStaticAssets(projectDir, outputDir);
         console.log('Static assets copied successfully');
         
-        const posts = await processMarkdownFiles(projectDir);
-        console.log(`Processed ${posts.length} posts successfully`);
+        // Process both flat posts and series
+        const { posts, series } = await processMarkdownFiles(projectDir);
+        console.log(`Processed ${posts.length} posts and ${series.length} series successfully`);
         
         // Process standalone pages (about, etc.)
         const pages = await processPages(projectDir);
@@ -41,12 +42,17 @@ async function build(projectDir = '.'){
         await generatePageFiles(pages, env, config, outputDir);
         console.log('Static pages generated successfully');
         
-        await generateHomePage(posts, env, config, outputDir);
+        // Generate series pages
+        await generateSeriesPages(series, env, config, outputDir);
+        console.log('Series pages generated successfully');
+        
+        await generateHomePage(posts, series, env, config, outputDir);
         console.log('Home page generated successfully');
         
         // Generate posts listing page
-        await generatePostsListingPage(posts, env, config, outputDir);
+        await generatePostsListingPage(posts, series, env, config, outputDir);
         console.log('Posts listing page generated successfully');
+        
         await generateAboutMePage(projectDir, config, outputDir);
         
         // Generate category pages
@@ -99,46 +105,136 @@ async function copyStaticAssets(projectDir,outputDir){
     }
 }
 
-async function processMarkdownFiles(projectDir){
-    const contentDir = path.join(projectDir,'content');
+async function processMarkdownFiles(projectDir) {
+    const contentDir = path.join(projectDir, 'content');
     const posts = [];
-    if (!(await fs.pathExists(contentDir))){
+    const series = [];
+    
+    if (!(await fs.pathExists(contentDir))) {
         console.log('No content directory found, skipping..');
-        return posts
+        return { posts, series };
     }
-    const files = await fs.readdir(contentDir);
-    const markdownFiles = files.filter(file => file.endsWith('.md'));
 
-    for (const file of markdownFiles){
-        const filePath = path.join(contentDir,file);
-        const fileContent = await fs.readFile(filePath,"utf8");
-        const {data:frontMatter,content} = matter(fileContent);
-        const htmlContent = md.render(content);
-        // Create post objects
-        const slug = path.basename(file,'.md');
-        const post = {
-            slug,
-            title:frontMatter.title||slug,
-            description:frontMatter.description||'',
-            date:frontMatter.date||new Date().toISOString().split('T')[0],
-            category:frontMatter.category||'',
-            image:frontMatter.image||'',
-            layout: frontMatter.layout || 'post',
-            content: htmlContent,
-            url: `/${slug}.html`,
-            frontMatter,
-            ...frontMatter
-        };
+    const items = await fs.readdir(contentDir, { withFileTypes: true });
+    
+    // Process flat markdown files (existing behavior)
+    const markdownFiles = items
+        .filter(item => item.isFile() && item.name.endsWith('.md'))
+        .map(item => item.name);
+
+    for (const file of markdownFiles) {
+        const filePath = path.join(contentDir, file);
+        const post = await processMarkdownFile(filePath, file);
         posts.push(post);
     }
-    posts.sort((a,b)=>new Date(b.date) - new Date(a.date));
-    return posts;
+
+    // Process directories (series)
+    const directories = items.filter(item => item.isDirectory());
+    
+    for (const dir of directories) {
+        const dirPath = path.join(contentDir, dir.name);
+        const indexPath = path.join(dirPath, '_index.md');
+        
+        // Check if directory has _index.md
+        if (await fs.pathExists(indexPath)) {
+            const seriesData = await processSeriesDirectory(dirPath, dir.name);
+            if (seriesData) {
+                series.push(seriesData);
+                // Add series posts to main posts array
+                posts.push(...seriesData.posts);
+            }
+        } else {
+            console.warn(`Directory ${dir.name} found but no _index.md file. Skipping...`);
+        }
+    }
+    
+    // Sort all posts by date (newest first)
+    posts.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    return { posts, series };
 }
 
-async function generateAboutMePage(projectDir, siteConfig, outputDir) {
-    const nunjucksEnv = setupTemplating(projectDir);
-    const html = nunjucksEnv.render('aboutme.html', { site: siteConfig });
-    await fs.outputFile(path.join(outputDir, 'aboutme.html'), html);
+async function processMarkdownFile(filePath, filename, seriesSlug = null) {
+    const fileContent = await fs.readFile(filePath, "utf8");
+    const { data: frontMatter, content } = matter(fileContent);
+    const htmlContent = md.render(content);
+    
+    const slug = path.basename(filename, '.md');
+    const post = {
+        slug: seriesSlug ? `${seriesSlug}/${slug}` : slug,
+        title: frontMatter.title || slug,
+        description: frontMatter.description || '',
+        date: frontMatter.date || new Date().toISOString().split('T')[0],
+        category: frontMatter.category || '',
+        image: frontMatter.image || '',
+        layout: frontMatter.layout || 'post',
+        content: htmlContent,
+        url: seriesSlug ? `/${seriesSlug}/${slug}.html` : `/${slug}.html`,
+        frontMatter,
+        series: seriesSlug,
+        order: frontMatter.order || 0,
+        ...frontMatter
+    };
+    
+    return post;
+}
+
+async function processSeriesDirectory(dirPath, dirName) {
+    const indexPath = path.join(dirPath, '_index.md');
+    
+    // Read series metadata from _index.md
+    const indexContent = await fs.readFile(indexPath, "utf8");
+    const { data: seriesMetadata, content: seriesDescription } = matter(indexContent);
+    
+    const seriesSlug = dirName.toLowerCase().replace(/\s+/g, '-');
+    
+    // Get all markdown files in the series directory (except _index.md)
+    const files = await fs.readdir(dirPath);
+    const markdownFiles = files.filter(f => f.endsWith('.md') && f !== '_index.md');
+    
+    const seriesPosts = [];
+    
+    for (const file of markdownFiles) {
+        const filePath = path.join(dirPath, file);
+        const post = await processMarkdownFile(filePath, file, seriesSlug);
+        seriesPosts.push(post);
+    }
+    
+    // Sort series posts by order (if specified) then by date
+    seriesPosts.sort((a, b) => {
+        if (a.order !== b.order) {
+            return a.order - b.order;
+        }
+        return new Date(a.date) - new Date(b.date);
+    });
+    
+    // Add navigation links to each post in the series
+    seriesPosts.forEach((post, index) => {
+        post.seriesInfo = {
+            title: seriesMetadata.title || dirName,
+            slug: seriesSlug,
+            currentIndex: index + 1,
+            totalPosts: seriesPosts.length,
+            previousPost: index > 0 ? seriesPosts[index - 1] : null,
+            nextPost: index < seriesPosts.length - 1 ? seriesPosts[index + 1] : null
+        };
+    });
+    
+    return {
+        slug: seriesSlug,
+        title: seriesMetadata.title || dirName,
+        description: seriesMetadata.description || '',
+        category: seriesMetadata.category || '',
+        image: seriesMetadata.image || '',
+        date: seriesMetadata.date || new Date().toISOString().split('T')[0],
+        layout: seriesMetadata.layout || 'series',
+        content: md.render(seriesDescription),
+        url: `/${seriesSlug}/index.html`,
+        posts: seriesPosts,
+        postCount: seriesPosts.length,
+        frontMatter: seriesMetadata,
+        ...seriesMetadata
+    };
 }
 
 async function processPages(projectDir) {
@@ -176,22 +272,54 @@ async function processPages(projectDir) {
     return pages;
 }
 
-async function generatePostPages(posts,env,config,outputDir){
+async function generatePostPages(posts, env, config, outputDir) {
     for (const post of posts) {
-    const templateName = `${post.layout}.html`;
-    
-    try {
-        // Render the post using its specified layout
-        const html = env.render(templateName, {
-            ...post,
-            site: config
-        });
+        const templateName = `${post.layout}.html`;
         
-        const outputPath = path.join(outputDir, `${post.slug}.html`);
-        await fs.writeFile(outputPath, html);
+        try {
+            // Create subdirectory if post is part of a series
+            if (post.series) {
+                await fs.ensureDir(path.join(outputDir, post.series));
+            }
+            
+            // Render the post using its specified layout
+            const html = env.render(templateName, {
+                ...post,
+                site: config
+            });
+            
+            const outputPath = post.series 
+                ? path.join(outputDir, `${post.series}`, `${path.basename(post.slug)}.html`)
+                : path.join(outputDir, `${post.slug}.html`);
+            
+            await fs.writeFile(outputPath, html);
+            
+        } catch (error) {
+            console.error(`Error generating page for ${post.slug}:`, error.message);
+        }
+    }
+}
+
+async function generateSeriesPages(series, env, config, outputDir) {
+    for (const seriesItem of series) {
+        const templateName = `${seriesItem.layout}.html`;
         
-    }   catch (error) {
-        console.error(`Error generating page for ${post.slug}:`, error.message);
+        try {
+            // Create series directory
+            const seriesDir = path.join(outputDir, seriesItem.slug);
+            await fs.ensureDir(seriesDir);
+            
+            // Render the series index page
+            const html = env.render(templateName, {
+                ...seriesItem,
+                site: config
+            });
+            
+            const outputPath = path.join(seriesDir, 'index.html');
+            await fs.writeFile(outputPath, html);
+            
+        } catch (error) {
+            console.error(`Error generating series page for ${seriesItem.slug}:`, error.message);
         }
     }
 }
@@ -215,11 +343,11 @@ async function generatePageFiles(pages, env, config, outputDir) {
     }
 }
 
-async function generateHomePage(posts, env, config, outputDir) {
+async function generateHomePage(posts, series, env, config, outputDir) {
     try {
         // Get latest posts for cards (first 6)
         const latestPosts = posts.slice(0, 6);
-        const quickLinks = Object.entries(config.links).map(([label, obj]) => ({
+        const quickLinks = Object.entries(config.links || {}).map(([label, obj]) => ({
             label,
             href: obj.href,
             icon: obj.icon || null
@@ -229,6 +357,7 @@ async function generateHomePage(posts, env, config, outputDir) {
         const html = env.render('index.html', {
             site: config,
             posts: posts,
+            series: series,
             latestPosts: latestPosts,
             links: quickLinks
         });
@@ -242,11 +371,12 @@ async function generateHomePage(posts, env, config, outputDir) {
     }
 }
 
-async function generatePostsListingPage(posts, env, config, outputDir) {
+async function generatePostsListingPage(posts, series, env, config, outputDir) {
     try {
         const html = env.render('posts.html', {
             site: config,
             posts: posts,
+            series: series,
             title: 'All Posts'
         });
         
@@ -257,6 +387,12 @@ async function generatePostsListingPage(posts, env, config, outputDir) {
         console.error('Error generating posts listing page:', error.message);
         throw error;
     }
+}
+
+async function generateAboutMePage(projectDir, siteConfig, outputDir) {
+    const nunjucksEnv = setupTemplating(projectDir);
+    const html = nunjucksEnv.render('aboutme.html', { site: siteConfig });
+    await fs.outputFile(path.join(outputDir, 'aboutme.html'), html);
 }
 
 async function generateCategoryPages(posts, env, config, outputDir) {

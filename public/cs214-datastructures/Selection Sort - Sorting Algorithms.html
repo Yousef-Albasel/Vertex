@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }} - {{ site.name }}</title>
+    <title>Selection Sort - Albasel</title>
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -85,70 +85,97 @@
     </style>
 </head>
 <body>
-    {% include "_navbar.html" %}
+    <nav class="navbar">
+    <div class="navbar-container">
+        <a href="/" class="navbar-title">Albasel</a>
+        <ul class="navbar-links">
+            <li><a href="/posts.html">Posts</a></li>
+            <li><a href="/categories.html">Categories</a></li>
+            <li><a href="/aboutme.html">About Me</a></li>
+        </ul>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+            <i class="fa-solid fa-moon" id="theme-icon"></i>
+        </button>
+    </div>
+</nav>
 
     <div class="container">
         <!-- Series Info (if post is part of a series) -->
-        {% if seriesInfo %}
+        
         <div class="series-info">
             <div>
                 <i class="fas fa-book"></i>
-                <strong>Part {{ seriesInfo.currentIndex }} of {{ seriesInfo.totalPosts }}</strong> in
-                <a href="/{{ seriesInfo.slug }}/">{{ seriesInfo.title }}</a>
+                <strong>Part 9 of 11</strong> in
+                <a href="/cs214-datastructures/">DSA</a>
             </div>
             <div class="series-progress">
-                {{ seriesInfo.currentIndex }}/{{ seriesInfo.totalPosts }}
+                9/11
             </div>
         </div>
-        {% endif %}
+        
 
         <!-- Post Content -->
         <article class="post">
             <header class="post-header">
-                <h1>{{ title }}</h1>
+                <h1>Selection Sort</h1>
                 <div class="post-meta">
-                    <time>{{ date }}</time>
-                    {% if category %}<span class="category">{{ category }}</span>{% endif %}
-                    {% if series %}<span class="series-tag"><i class="fas fa-book"></i> Series</span>{% endif %}
+                    <time>2024-02-20</time>
+                    <span class="category">Algorithms</span>
+                    <span class="series-tag"><i class="fas fa-book"></i> Series</span>
                 </div>
-                {% if image %}
-                <img src="{{ image }}" alt="{{ title }}" class="post-image">
-                {% endif %}
+                
+                <img src="/images/algorithms.png" alt="Selection Sort" class="post-image">
+                
             </header>
             <div class="post-content">
-                {{ content | safe }}
+                <h3>Selection Sort</h3>
+<p>Sorts an array by making several passes through the
+array, selecting the next smallest item in the array each
+time and placing it where it belongs in the array</p>
+<p>It attempts to localize exchanges by putting the item
+directly in its final place.</p>
+<p>Efficiency is <strong>O(n*n)</strong></p>
+<pre><code class="language-c">void selectionSort(vector&lt;int&gt; &amp;v, int n)
+{
+    for (int i = 0, j, mn; i &lt; n - 1; i++)
+    {
+
+        for (j = i + 1, mn = i; j &lt; n; j++)
+        {
+            if (v[j] &lt; v[mn])
+                mn = j;
+        }
+        swap(v[i], v[mn]);
+    }
+}
+</code></pre>
+
             </div>
             
             <!-- Series Navigation (if post is part of a series) -->
-            {% if seriesInfo %}
+            
             <nav class="series-navigation">
-                {% if seriesInfo.previousPost %}
-                    <a href="{{ seriesInfo.previousPost.url }}" class="nav-link">
-                        <span class="nav-link-label"><i class="fas fa-arrow-left"></i> Previous</span>
-                        <span class="nav-link-title">{{ seriesInfo.previousPost.title }}</span>
-                    </a>
-                {% else %}
-                    <div class="nav-placeholder"></div>
-                {% endif %}
                 
-                {% if seriesInfo.nextPost %}
-                    <a href="{{ seriesInfo.nextPost.url }}" class="nav-link" style="text-align: right;">
-                        <span class="nav-link-label">Next <i class="fas fa-arrow-right"></i></span>
-                        <span class="nav-link-title">{{ seriesInfo.nextPost.title }}</span>
+                    <a href="/cs214-datastructures/Quick Sort - Sorting Algorithms.html" class="nav-link">
+                        <span class="nav-link-label"><i class="fas fa-arrow-left"></i> Previous</span>
+                        <span class="nav-link-title">Quick Sort</span>
                     </a>
-                {% else %}
-                    <div class="nav-placeholder"></div>
-                {% endif %}
+                
+                
+                
+                    <a href="/cs214-datastructures/Shell Sort - Sorting Algorithms.html" class="nav-link" style="text-align: right;">
+                        <span class="nav-link-label">Next <i class="fas fa-arrow-right"></i></span>
+                        <span class="nav-link-title">Shell Sort</span>
+                    </a>
+                
             </nav>
-            {% endif %}
+            
             
             <footer class="post-footer">
-                {% if series %}
-                    <a href="/{{ series }}/" class="back-link"><i class="fas fa-book"></i> Back to {{ seriesInfo.title if seriesInfo else 'Series' }}</a>
+                
+                    <a href="/cs214-datastructures/" class="back-link"><i class="fas fa-book"></i> Back to DSA</a>
                     <a href="/" class="back-link">&larr; Back to Home</a>
-                {% else %}
-                    <a href="/" class="back-link">&larr; Back to Home</a>
-                {% endif %}
+                
             </footer>
         </article>
     </div>

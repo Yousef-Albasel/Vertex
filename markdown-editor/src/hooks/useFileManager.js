@@ -18,11 +18,13 @@ export const useFileManager = () => {
 
   // Load files from server on mount
   useEffect(() => {
+    console.log('useFileManager: Loading files...');
     loadFiles();
     
     // Check URL parameters for specific file to open
     const { file: fileParam, create } = parseUrlParams();
     if (fileParam) {
+      console.log('URL param file:', fileParam, 'create:', create);
       // Wait for files to load, then open the specific file
       setTimeout(() => {
         openSpecificFile(fileParam, create);
@@ -31,18 +33,23 @@ export const useFileManager = () => {
   }, []);
 
   const loadFiles = async () => {
+    console.log('loadFiles: Starting...');
     setLoading(true);
     setError(null);
     
     try {
+      console.log('loadFiles: Calling fileService.loadFiles()...');
       const fileList = await fileService.loadFiles();
+      console.log('loadFiles: Received files:', fileList);
       
       if (fileList.length === 0) {
+        console.log('loadFiles: No files found, creating welcome file...');
         // Create a default welcome file
         const welcomeFile = {
           name: 'welcome.md',
           path: 'content/welcome.md',
           directory: 'content',
+          folder: '',
           content: createWelcomeContent(),
           modified: true,
           lastModified: new Date().toISOString()
@@ -50,14 +57,38 @@ export const useFileManager = () => {
         
         setFiles([welcomeFile]);
         setSelectedFile(welcomeFile);
+        console.log('loadFiles: Set welcome file');
       } else {
+        console.log('loadFiles: Setting files to state:', fileList);
         setFiles(fileList);
+        
+        // Auto-select and load content for the first file if no file is currently selected
         if (fileList.length > 0 && !selectedFile) {
-          setSelectedFile(fileList[0]);
+          console.log('loadFiles: Loading content for first file:', fileList[0]);
+          try {
+            const firstFile = fileList[0];
+            const fileData = await fileService.loadFileContent(firstFile.path);
+            console.log('loadFiles: Received content for first file:', fileData);
+            
+            const fullFile = { 
+              ...firstFile, 
+              content: fileData.content,
+              frontMatter: fileData.frontMatter,
+              lastModified: fileData.lastModified
+            };
+            
+            console.log('loadFiles: Setting first file as selected with content');
+            setSelectedFile(fullFile);
+            
+          } catch (err) {
+            console.error('loadFiles: Error loading first file content:', err);
+            // Just select the file without content - user can click to load it
+            setSelectedFile(fileList[0]);
+          }
         }
       }
     } catch (err) {
-      console.error('Error loading files:', err);
+      console.error('loadFiles: Error loading files:', err);
       setError(`Cannot connect to API server. Make sure the server is running on ${API_BASE}`);
       
       // Fallback: Create offline mode file
@@ -65,19 +96,23 @@ export const useFileManager = () => {
         name: 'offline.md',
         path: 'content/offline.md',
         directory: 'content',
+        folder: '',
         content: createOfflineContent(API_BASE),
         modified: false,
         lastModified: new Date().toISOString()
       };
       
+      console.log('loadFiles: Setting offline file');
       setFiles([offlineFile]);
       setSelectedFile(offlineFile);
     } finally {
       setLoading(false);
+      console.log('loadFiles: Loading complete');
     }
   };
 
   const openSpecificFile = async (filePath, createIfNotExists = false) => {
+    console.log('openSpecificFile:', filePath, 'create:', createIfNotExists);
     const file = files.find(f => f.path === filePath || f.name === filePath.split('/').pop());
     
     if (file) {
@@ -85,31 +120,28 @@ export const useFileManager = () => {
     } else if (createIfNotExists) {
       // Create new file if it doesn't exist
       const fileName = filePath.split('/').pop();
-      const directory = filePath.startsWith('pages/') ? 'pages' : 'content';
+      const pathParts = filePath.split('/');
+      const directory = pathParts[0] === 'content' ? 'content' : 'content';
+      const folder = pathParts.slice(1, -1).join('/');
       
-      const newFile = {
-        name: fileName,
-        path: filePath,
-        directory: directory,
-        content: createDefaultContent(fileName, directory),
-        modified: true,
-        lastModified: new Date().toISOString()
-      };
-      
-      setFiles(prev => [...prev, newFile]);
-      setSelectedFile(newFile);
+      await handleCreateFile(folder, fileName);
     }
   };
 
   const handleFileSelect = async (file) => {
+    console.log('handleFileSelect:', file);
     if (file.content !== undefined) {
       // File content already loaded
+      console.log('handleFileSelect: Content already loaded');
       setSelectedFile(file);
       return;
     }
 
     try {
-      const fileData = await fileService.loadFileContent(file.directory, file.name);
+      console.log('handleFileSelect: Loading content for', file.path);
+      const fileData = await fileService.loadFileContent(file.path);
+      console.log('handleFileSelect: Received file data:', fileData);
+      
       const fullFile = { 
         ...file, 
         content: fileData.content,
@@ -117,18 +149,20 @@ export const useFileManager = () => {
         lastModified: fileData.lastModified
       };
       
+      console.log('handleFileSelect: Setting selected file:', fullFile);
       setSelectedFile(fullFile);
       
       // Update the file in the files array
       setFiles(prev => prev.map(f => f.path === file.path ? fullFile : f));
       
     } catch (err) {
-      console.error('Error loading file:', err);
+      console.error('handleFileSelect: Error loading file:', err);
       setError(`Error loading file "${file.name}": ${err.message}`);
     }
   };
 
   const handleContentChange = (newContent) => {
+    console.log('handleContentChange: New content length:', newContent?.length);
     if (!selectedFile) return;
     
     const updatedFiles = files.map(file => 
@@ -141,19 +175,24 @@ export const useFileManager = () => {
     setSelectedFile({ ...selectedFile, content: newContent, modified: true });
   };
 
-  const handleCreateFile = () => {
-    const fileName = prompt('Enter file name (with .md extension):');
-    if (!fileName) return;
+  const handleCreateFile = async (folderPath = '', fileName = null) => {
+    console.log('handleCreateFile: folderPath:', folderPath, 'fileName:', fileName);
     
-    const validation = validateFileName(fileName);
+    // Get filename from user if not provided
+    const finalFileName = fileName || prompt('Enter file name (with .md extension):');
+    if (!finalFileName) return;
+    
+    const validation = validateFileName(finalFileName);
     if (!validation.valid) {
       alert(validation.error);
       return;
     }
     
-    // Ask for directory (could be enhanced with a proper dialog)
+    // Build the full file path
     const directory = 'content';
-    const filePath = `${directory}/${fileName}`;
+    const filePath = folderPath 
+      ? `${directory}/${folderPath}/${finalFileName}` 
+      : `${directory}/${finalFileName}`;
     
     // Check if file already exists
     if (files.some(file => file.path === filePath)) {
@@ -161,17 +200,52 @@ export const useFileManager = () => {
       return;
     }
 
-    const newFile = { 
-      name: fileName,
-      path: filePath,
-      directory: directory,
-      content: createDefaultContent(fileName, directory),
-      modified: true,
-      lastModified: new Date().toISOString()
-    };
+    try {
+      console.log('handleCreateFile: Creating file on server:', filePath);
+      
+      // Create default content
+      const defaultContent = createDefaultContent(finalFileName, directory);
+      
+      // Save the file to the server first
+      await fileService.saveFile(filePath, defaultContent);
+      
+      console.log('handleCreateFile: File created on server, refreshing file list...');
+      
+      // Refresh the file list to get the new file from the server
+      await loadFiles();
+      
+      // Select the new file
+      const newFile = files.find(f => f.path === filePath);
+      if (newFile) {
+        await handleFileSelect(newFile);
+      }
+      
+      console.log('handleCreateFile: Successfully created and selected new file');
+      
+    } catch (err) {
+      console.error('handleCreateFile: Error creating file:', err);
+      setError(`Error creating file "${finalFileName}": ${err.message}`);
+    }
+  };
+
+  const handleCreateFolder = async (parentPath = 'content') => {
+    const folderName = prompt('Enter folder name:');
+    if (!folderName) return;
     
-    setFiles(prev => [...prev, newFile]);
-    setSelectedFile(newFile);
+    const cleanFolderName = folderName.toLowerCase().replace(/\s+/g, '-');
+    const folderPath = `${parentPath}/${cleanFolderName}`;
+    const isSeries = confirm('Create as a series? (This will add an _index.md file)');
+    
+    try {
+      console.log('handleCreateFolder: Creating folder:', folderPath, 'isSeries:', isSeries);
+      await fileService.createFolder(folderPath, isSeries);
+      console.log('handleCreateFolder: Folder created, refreshing files...');
+      await loadFiles();
+      console.log(`Successfully created folder: ${folderPath}`);
+    } catch (err) {
+      console.error('Error creating folder:', err);
+      setError(`Error creating folder "${folderName}": ${err.message}`);
+    }
   };
 
   const handleDeleteFile = async (fileToDelete) => {
@@ -185,14 +259,18 @@ export const useFileManager = () => {
     }
 
     try {
-      await fileService.deleteFile(fileToDelete.directory, fileToDelete.name);
+      await fileService.deleteFile(fileToDelete.path);
 
       const updatedFiles = files.filter(file => file.path !== fileToDelete.path);
       setFiles(updatedFiles);
       
       // If the deleted file was selected, select the first remaining file
       if (selectedFile?.path === fileToDelete.path) {
-        setSelectedFile(updatedFiles[0]);
+        if (updatedFiles.length > 0) {
+          await handleFileSelect(updatedFiles[0]);
+        } else {
+          setSelectedFile(null);
+        }
       }
       
       console.log(`Successfully deleted file: ${fileToDelete.name}`);
@@ -207,11 +285,7 @@ export const useFileManager = () => {
     if (!selectedFile) return;
 
     try {
-      const result = await fileService.saveFile(
-        selectedFile.directory, 
-        selectedFile.name, 
-        selectedFile.content
-      );
+      const result = await fileService.saveFile(selectedFile.path, selectedFile.content);
       
       // Update the file to mark it as saved
       const updatedFiles = files.map(file => 
@@ -286,6 +360,19 @@ export const useFileManager = () => {
     setError(null);
   };
 
+  // Debug: Log state changes
+  useEffect(() => {
+    console.log('useFileManager state update:');
+    console.log('- files:', files);
+    console.log('- files length:', files.length);
+    console.log('- selectedFile:', selectedFile);
+    console.log('- selectedFile name:', selectedFile?.name);
+    console.log('- selectedFile path:', selectedFile?.path);
+    console.log('- selectedFile content length:', selectedFile?.content?.length);
+    console.log('- loading:', loading);
+    console.log('- error:', error);
+  }, [files, selectedFile, loading, error]);
+
   return {
     // State
     files,
@@ -297,6 +384,7 @@ export const useFileManager = () => {
     handleFileSelect,
     handleContentChange,
     handleCreateFile,
+    handleCreateFolder,
     handleDeleteFile,
     handleSave,
     handleSaveAll,

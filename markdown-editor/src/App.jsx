@@ -16,7 +16,7 @@ export default function App() {
   useKeyboardShortcuts({
     onSave: fileManager.handleSave,
     onSaveAll: fileManager.handleSaveAll,
-    onCreateFile: fileManager.handleCreateFile,
+    onCreateFile: () => fileManager.handleCreateFile(''),
     onTogglePreview: appSettings.handleTogglePreview,
     disabled: fileManager.loading
   });
@@ -48,6 +48,7 @@ export default function App() {
       // File manager actions
       onFileSelect={fileManager.handleFileSelect}
       onCreateFile={fileManager.handleCreateFile}
+      onCreateFolder={fileManager.handleCreateFolder}
       onDeleteFile={fileManager.handleDeleteFile}
       onContentChange={fileManager.handleContentChange}
       onSave={fileManager.handleSave}

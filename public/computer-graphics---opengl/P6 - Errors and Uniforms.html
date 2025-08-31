@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }} - {{ site.name }}</title>
+    <title>P6 Errors and Uniforms - Albasel</title>
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -85,70 +85,132 @@
     </style>
 </head>
 <body>
-    {% include "_navbar.html" %}
+    <nav class="navbar">
+    <div class="navbar-container">
+        <a href="/" class="navbar-title">Albasel</a>
+        <ul class="navbar-links">
+            <li><a href="/posts.html">Posts</a></li>
+            <li><a href="/categories.html">Categories</a></li>
+            <li><a href="/aboutme.html">About Me</a></li>
+        </ul>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+            <i class="fa-solid fa-moon" id="theme-icon"></i>
+        </button>
+    </div>
+</nav>
 
     <div class="container">
         <!-- Series Info (if post is part of a series) -->
-        {% if seriesInfo %}
+        
         <div class="series-info">
             <div>
                 <i class="fas fa-book"></i>
-                <strong>Part {{ seriesInfo.currentIndex }} of {{ seriesInfo.totalPosts }}</strong> in
-                <a href="/{{ seriesInfo.slug }}/">{{ seriesInfo.title }}</a>
+                <strong>Part 9 of 11</strong> in
+                <a href="/computer-graphics---opengl/">Computer Graphics - OpenGL</a>
             </div>
             <div class="series-progress">
-                {{ seriesInfo.currentIndex }}/{{ seriesInfo.totalPosts }}
+                9/11
             </div>
         </div>
-        {% endif %}
+        
 
         <!-- Post Content -->
         <article class="post">
             <header class="post-header">
-                <h1>{{ title }}</h1>
+                <h1>P6 Errors and Uniforms</h1>
                 <div class="post-meta">
-                    <time>{{ date }}</time>
-                    {% if category %}<span class="category">{{ category }}</span>{% endif %}
-                    {% if series %}<span class="series-tag"><i class="fas fa-book"></i> Series</span>{% endif %}
+                    <time>2024-01-01</time>
+                    <span class="category">OpenGL</span>
+                    <span class="series-tag"><i class="fas fa-book"></i> Series</span>
                 </div>
-                {% if image %}
-                <img src="{{ image }}" alt="{{ title }}" class="post-image">
-                {% endif %}
+                
+                <img src="/images/opengl.jpg" alt="P6 Errors and Uniforms" class="post-image">
+                
             </header>
             <div class="post-content">
-                {{ content | safe }}
+                <h2>Errors in OpenGL</h2>
+<hr>
+<p>OpenGL doesn’t provide a clear error logging so we will create one, without getting in much details here is the code that we created</p>
+<pre><code class="language-c">#define ASSERT(x) if (!(x)) __debugbreak();
+#define GLCall(x) GLClearError();\
+    x;\
+    ASSERT(GLLogCall(#x,__FILE__,__LINE__))
+
+static void GLClearError() {
+    while (glGetError() != GL_NO_ERROR) ;
+}
+
+static bool GLLogCall(const char* function,const char* file,int line) {
+    while (GLenum error = glGetError()) {
+        std::cout &lt;&lt; &quot;[OPENGL ERROR] (&quot; &lt;&lt; error &lt;&lt; &quot;):&quot; &lt;&lt; function &lt;&lt;
+            &quot; &quot; &lt;&lt; file &lt;&lt; &quot;:&quot; &lt;&lt; std::endl;
+
+        return false;
+    }
+    return true;
+}
+</code></pre>
+<p>In simple terms, we are defining two macros: one for ASSERT, which will halt the application and mark the error’s position with a break point, and another for automatically calling GLClearError, which will display the error line, file name, location, etc. only for the sake of clean code</p>
+<p>now each time we want to check if a function call returns an error we can use GLCall(); eg:</p>
+<pre><code class="language-c">GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+</code></pre>
+<p>and that’s it, next we cover uniforms in OpenGL.</p>
+<hr>
+<h2>Uniforms</h2>
+<p>Uniforms are basically like a variable that gets assigned in a shader then manipulated inside our c++ program so for example if i modify our fragment shader to have a
+<code>uniform vec4 uColor;</code> then use it in our shader.</p>
+<pre><code>void main()
+{
+	color = u_Color;
+};
+</code></pre>
+<p>what we can do now is to find the location of that uniform call and update the values in real time inside our render loop</p>
+<pre><code class="language-c">        GLCall(int location = glGetUniformLocation(shader, &quot;u_Color&quot;));
+        ASSERT(location != -1);
+        GLCall(glUniform4f(location,0.2f,0.3f,0.4f,1.0f));
+    /* Loop until the user closes the window */
+        float r = 0.0f;
+        float increment = 0.05f;
+</code></pre>
+<p>inside render loop:</p>
+<pre><code class="language-c">        GLCall(glUniform4f(location, r,0.4f,0.3f, 1.0f));
+
+        GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+        
+        if (r &gt; 1.0f)
+            increment = -0.05f;
+        else if (r &lt;= 0.0f)
+            increment = 0.05f;
+
+        r += increment;
+</code></pre>
+
             </div>
             
             <!-- Series Navigation (if post is part of a series) -->
-            {% if seriesInfo %}
+            
             <nav class="series-navigation">
-                {% if seriesInfo.previousPost %}
-                    <a href="{{ seriesInfo.previousPost.url }}" class="nav-link">
-                        <span class="nav-link-label"><i class="fas fa-arrow-left"></i> Previous</span>
-                        <span class="nav-link-title">{{ seriesInfo.previousPost.title }}</span>
-                    </a>
-                {% else %}
-                    <div class="nav-placeholder"></div>
-                {% endif %}
                 
-                {% if seriesInfo.nextPost %}
-                    <a href="{{ seriesInfo.nextPost.url }}" class="nav-link" style="text-align: right;">
-                        <span class="nav-link-label">Next <i class="fas fa-arrow-right"></i></span>
-                        <span class="nav-link-title">{{ seriesInfo.nextPost.title }}</span>
+                    <a href="/computer-graphics---opengl/P5 - Index Buffers.html" class="nav-link">
+                        <span class="nav-link-label"><i class="fas fa-arrow-left"></i> Previous</span>
+                        <span class="nav-link-title">P5 Index Buffers</span>
                     </a>
-                {% else %}
-                    <div class="nav-placeholder"></div>
-                {% endif %}
+                
+                
+                
+                    <a href="/computer-graphics---opengl/P7 - Textures in OpenGL.html" class="nav-link" style="text-align: right;">
+                        <span class="nav-link-label">Next <i class="fas fa-arrow-right"></i></span>
+                        <span class="nav-link-title">P7 Textures in OpenGL</span>
+                    </a>
+                
             </nav>
-            {% endif %}
+            
             
             <footer class="post-footer">
-                {% if series %}
-                    <a href="/{{ series }}/" class="back-link"><i class="fas fa-book"></i> Back to {{ seriesInfo.title if seriesInfo else 'Series' }}</a>
+                
+                    <a href="/computer-graphics---opengl/" class="back-link"><i class="fas fa-book"></i> Back to Computer Graphics - OpenGL</a>
                     <a href="/" class="back-link">&larr; Back to Home</a>
-                {% else %}
-                    <a href="/" class="back-link">&larr; Back to Home</a>
-                {% endif %}
+                
             </footer>
         </article>
     </div>

@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linked Lists  - Albasel</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .series-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .series-info a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .series-info a:hover {
+            text-decoration: underline;
+        }
+        .series-progress {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        .series-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid #eee;
+            gap: 1rem;
+        }
+        .nav-link {
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.2s;
+            max-width: 45%;
+        }
+        .nav-link:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+        .nav-link-label {
+            font-size: 0.8rem;
+            color: #666;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+        .nav-link-title {
+            font-weight: bold;
+            line-height: 1.3;
+        }
+        .nav-placeholder {
+            width: 45%;
+        }
+        body.dark-mode .series-navigation {
+            border-top: 2px solid #333;
+        }
+        body.dark-mode .nav-link {
+            background: #2a2a2a;
+            color: #e0e0e0;
+        }
+        body.dark-mode .nav-link:hover {
+            background: #3a3a3a;
+        }
+        body.dark-mode .nav-link-label {
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+    <div class="navbar-container">
+        <a href="/" class="navbar-title">Albasel</a>
+        <ul class="navbar-links">
+            <li><a href="/posts.html">Posts</a></li>
+            <li><a href="/categories.html">Categories</a></li>
+            <li><a href="/aboutme.html">About Me</a></li>
+        </ul>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+            <i class="fa-solid fa-moon" id="theme-icon"></i>
+        </button>
+    </div>
+</nav>
+
+    <div class="container">
+        <!-- Series Info (if post is part of a series) -->
+        
+        <div class="series-info">
+            <div>
+                <i class="fas fa-book"></i>
+                <strong>Part 5 of 11</strong> in
+                <a href="/cs214-datastructures/">DSA</a>
+            </div>
+            <div class="series-progress">
+                5/11
+            </div>
+        </div>
+        
+
+        <!-- Post Content -->
+        <article class="post">
+            <header class="post-header">
+                <h1>Linked Lists </h1>
+                <div class="post-meta">
+                    <time>2024-02-20</time>
+                    <span class="category">Algorithms</span>
+                    <span class="series-tag"><i class="fas fa-book"></i> Series</span>
+                </div>
+                
+                <img src="/images/algorithms.png" alt="Linked Lists " class="post-image">
+                
+            </header>
+            <div class="post-content">
+                <pre><code class="language-c">#include &quot;SingleLinkedList.h&quot;
+
+#include &lt;iostream&gt;
+
+using namespace std;
+
+  
+
+template &lt;class Type&gt;
+
+SingleLinkedList&lt;Type&gt; :: SingleLinkedList()
+
+{
+
+    count = 0;
+
+    first = NULL;
+
+    last = NULL;
+
+}
+
+  
+
+template &lt;class Type&gt;
+
+SingleLinkedList&lt;Type&gt; :: ~SingleLinkedList()
+
+{
+
+    clear();
+
+}
+
+  
+
+template &lt;class Type&gt;
+
+void SingleLinkedList&lt;Type&gt; :: insertAtHead(Type element)
+
+{
+
+    nodeType &lt;Type&gt; *newNode = new nodeType&lt;Type&gt;;
+
+    if (isEmpty()){
+
+        newNode -&gt; info = element;
+
+        newNode -&gt; link = NULL;
+
+        first = newNode;
+
+        last = newNode;
+
+        count ++;
+
+    }
+
+    else{
+
+        newNode -&gt; info = element;
+
+        newNode -&gt; link = first;
+
+        first = newNode;
+
+        count ++;
+
+    }
+
+}
+
+  
+
+template &lt;class Type&gt;
+
+void SingleLinkedList&lt;Type&gt; :: insertAtTail(Type element){
+
+    nodeType &lt;Type&gt; *newNode = new nodeType&lt;Type&gt;;
+
+    if (isEmpty()){
+
+        newNode -&gt; info = element;
+
+        newNode -&gt; link = NULL;
+
+        first = newNode;
+
+        last = newNode;
+
+        count ++;
+
+    }
+
+    else {
+
+        nodeType &lt;Type&gt; *current;
+
+        nodeType &lt;Type&gt; *prev;
+
+        current = first;
+
+        prev = NULL;
+
+        while (current != NULL){
+
+            prev = current;
+
+            current = current -&gt; link;
+
+        }
+
+        prev -&gt; link = newNode;
+
+        newNode -&gt; info = element;
+
+        newNode -&gt; link = NULL;
+
+        last = newNode;
+
+        count ++;
+
+    }
+
+}
+
+  
+
+template &lt;class Type&gt;
+
+void SingleLinkedList&lt;Type&gt; :: insertAt(Type element, int index){
+
+    nodeType &lt;Type&gt; *newNode = new nodeType&lt;Type&gt;;
+
+    if (index &gt; count){
+
+        cout &lt;&lt; &quot;Error! Invalid index.&quot; &lt;&lt; endl;
+
+    }
+
+    else if (index == 0){
+
+        insertAtHead(element);
+
+    }
+
+    else if (index == count){
+
+        insertAtTail(element);
+
+    }
+
+    else{
+
+        int i = 0;
+
+        nodeType&lt;Type&gt; *current = first;
+
+        nodeType&lt;Type&gt; *prev = NULL;
+
+        while (i &lt; index){
+
+            prev = current;
+
+            current = current -&gt; link;
+
+            i++;
+
+        }
+
+        prev -&gt; link = newNode;
+
+        newNode -&gt; info = element;
+
+        newNode -&gt; link = current;
+
+        count ++;
+
+    }
+
+}
+
+  
+
+template &lt;class Type&gt;
+
+void SingleLinkedList&lt;Type&gt;:: removeAtHead(){
+
+    if (isEmpty()){
+
+        cout &lt;&lt; &quot;Error! List is empty.&quot; &lt;&lt; endl;
+
+    }
+
+    else{
+
+        nodeType&lt;Type&gt; *temp;
+
+        temp = first;
+
+        first = first -&gt; link;
+
+        delete temp;
+
+        count --;
+
+    }
+
+}
+
+  
+
+template &lt;class Type&gt;
+
+void SingleLinkedList&lt;Type&gt;:: removeAtTail(){
+
+    if (isEmpty()){
+
+        cout &lt;&lt; &quot;Error! List is empty.&quot; &lt;&lt; endl;
+
+    }
+
+    else{
+
+        nodeType &lt;Type&gt; *current;
+
+        nodeType &lt;Type&gt; *prev;
+
+        current = first;
+
+        prev = NULL;
+
+        while (current -&gt; link != NULL){
+
+            prev = current;
+
+            current = current -&gt; link;
+
+        }
+
+        prev -&gt; link = NULL;
+
+        last = prev;
+
+        delete current;
+
+        count --;
+
+    }
+
+}
+
+  
+
+template &lt;class Type&gt;
+
+void SingleLinkedList&lt;Type&gt;:: removeAt(int index){
+
+    if (index  &gt; count - 1){
+
+        cout &lt;&lt; &quot;Error! Invalid index.&quot; &lt;&lt; endl;
+
+    }
+
+    else if (index == count - 1){
+
+        removeAtTail();
+
+    }
+
+    else if (index == 0){
+
+        removeAtHead();
+
+    }
+
+    else{
+
+        int i = 0;
+
+        nodeType&lt;Type&gt; *current = first;
+
+        nodeType&lt;Type&gt; *prev = NULL;
+
+        while (i &lt; index){
+
+            prev = current;
+
+            current = current -&gt; link;
+
+            i++;
+
+        }
+
+        prev -&gt; link = current -&gt; link;
+
+        delete current;
+
+        count --;
+
+    }
+
+}
+
+  
+
+template &lt;class Type&gt;
+
+Type SingleLinkedList&lt;Type&gt; :: retrieveAt (int index) const{
+
+    if (index &gt; count - 1 || index &lt; 0){
+
+        cout &lt;&lt; &quot;Error! Invalid index.\n&quot;;
+
+    }
+
+    else{
+
+        nodeType&lt;Type&gt; *current = first;
+
+        int i = 0;
+
+        while (i != index){
+
+            current = current -&gt; link;
+
+            i ++;
+
+        }
+
+        return current -&gt; info;
+
+    }
+
+}
+
+  
+
+template &lt;class Type&gt;
+
+void SingleLinkedList&lt;Type&gt; :: replaceAt(Type newElement, int index){
+
+    nodeType&lt;Type&gt; *current = first;
+
+    if (index &gt; count - 1 || index &lt; 0){
+
+        cout &lt;&lt; &quot;Error! Invalid index.\n&quot;;
+
+    }
+
+    else{
+
+        int i = 0;
+
+        while (current != NULL &amp;&amp; i &lt; index){
+
+            current = current -&gt; link;
+
+            i ++;
+
+        }
+
+        current -&gt; info = newElement;
+
+    }
+
+}
+
+  
+
+template &lt;class Type&gt;
+
+bool SingleLinkedList&lt;Type&gt; :: isExist(Type element) const{
+
+    nodeType &lt;Type&gt; *current = first;
+
+    while (current != NULL){
+
+        if (current -&gt; info == element){
+
+            return true;
+
+        }
+
+        current = current -&gt; link;
+
+    }
+
+    return false;
+
+}
+
+  
+
+template &lt;class Type&gt;
+
+bool SingleLinkedList&lt;Type&gt; :: isItemAtEqual(Type element, int index){
+
+    if (index &gt; count - 1){
+
+        cout &lt;&lt; &quot;Error! Invalid index.\n&quot;;
+
+    }
+
+    else{
+
+        nodeType&lt;Type&gt; *current = first;
+
+        int i = 0;
+
+        while (current != NULL){
+
+            if (i == index &amp;&amp; current -&gt; info == element){
+
+                return true;
+
+            }
+
+            current = current -&gt; link;
+
+            i ++;
+
+        }
+
+        return false;
+
+    }
+
+}
+
+  
+
+template &lt;class Type&gt;
+
+void SingleLinkedList&lt;Type&gt; :: swap(int firstItemIdx, int secondItemIdx){
+
+    if (firstItemIdx &gt; count - 1 || secondItemIdx &gt; count - 1){
+
+        cout &lt;&lt; &quot;Error! Invalid index.\n&quot;;
+
+    }
+
+    else{
+
+        nodeType&lt;Type&gt; *F_idx, *S_idx;
+
+        F_idx = first, S_idx = first;
+
+        int i = 0;
+
+        int j = 0;
+
+        while (F_idx != NULL){
+
+            if (i == firstItemIdx){
+
+                break;
+
+            }
+
+            F_idx = F_idx -&gt; link;
+
+            i ++;
+
+        }
+
+        while (S_idx != NULL){
+
+            if (j == secondItemIdx){
+
+                break;
+
+            }
+
+            S_idx = S_idx -&gt; link;
+
+            j ++;
+
+        }
+
+        Type temp = F_idx -&gt; info;
+
+        F_idx -&gt; info = S_idx -&gt; info;
+
+        S_idx -&gt; info = temp;
+
+    }
+
+}
+
+  
+
+template &lt;class Type&gt;
+
+bool SingleLinkedList&lt;Type&gt; :: isEmpty(){
+
+    return (first == NULL);
+
+}
+
+  
+
+template &lt;class Type&gt;
+
+int SingleLinkedList&lt;Type&gt; :: linkedListSize(){
+
+    return count;
+
+}
+
+  
+
+template &lt;class Type&gt;
+
+void SingleLinkedList&lt;Type&gt;:: clear() {
+
+    nodeType&lt;Type&gt; *temp;
+
+    while(first != NULL){
+
+        temp = first;
+
+        first = first -&gt; link;
+
+        delete temp;
+
+    }
+
+    last = NULL;
+
+    count = 0;
+
+}
+
+  
+
+template &lt;class Type&gt;
+
+void SingleLinkedList&lt;Type&gt;:: print (){
+
+    if (isEmpty()){
+
+        cout &lt;&lt; &quot;Empty! Nothing to print.&quot; &lt;&lt; endl;
+
+    }
+
+    else{
+
+        nodeType&lt;Type&gt; *current = first;
+
+        while (current != NULL){
+
+            cout &lt;&lt; current -&gt; info &lt;&lt; ' ';
+
+            current = current -&gt; link;
+
+        }
+
+        cout &lt;&lt; '\n';
+
+    }
+
+}
+</code></pre>
+<h5>Doubly Linked List</h5>
+<pre><code class="language-c">#include &quot;DoublyLinkedList.h&quot;
+
+  
+
+template &lt;typename ElementType&gt;
+
+DoublyLinkedList&lt;ElementType&gt;::DoublyLinkedList()
+
+{
+
+    count = 0;
+
+    head = nullptr;
+
+    tail = nullptr;
+
+}
+
+  
+
+template &lt;typename ElementType&gt;
+
+DoublyLinkedList&lt;ElementType&gt;::~DoublyLinkedList()
+
+{
+
+    clear();
+
+}
+
+  
+
+template &lt;typename ElementType&gt;
+
+bool DoublyLinkedList&lt;ElementType&gt;::isEmpty() const
+
+{
+
+    return (head == nullptr);
+
+}
+
+  
+
+template &lt;typename ElementType&gt;
+
+void DoublyLinkedList&lt;ElementType&gt;::clear()
+
+{
+
+    Node&lt;ElementType&gt; *temp;
+
+  
+
+    while (head != nullptr)
+
+    {
+
+        temp = head;
+
+        head = head-&gt;next;
+
+        delete temp;
+
+    }
+
+    head = nullptr;
+
+    tail = nullptr;
+
+    count = 0;
+
+}
+
+  
+
+template &lt;typename ElementType&gt;
+
+int DoublyLinkedList&lt;ElementType&gt;::linkedListSize() const
+
+{
+
+    return count;
+
+}
+
+  
+
+template &lt;typename ElementType&gt;
+
+void DoublyLinkedList&lt;ElementType&gt;::print() const
+
+{
+
+    Node&lt;ElementType&gt; *current = head;
+
+    if (head == nullptr)
+
+    {
+
+        std::cout &lt;&lt; &quot;List is empty.&quot; &lt;&lt; std::endl;
+
+        return;
+
+    }
+
+    while (current-&gt;next != nullptr)
+
+    {
+
+        std::cout &lt;&lt; current-&gt;info &lt;&lt; &quot; &quot;;
+
+        current = current-&gt;next;
+
+    }
+
+    std::cout &lt;&lt; current-&gt;info;
+
+    std::cout &lt;&lt; std::endl;
+
+}
+
+  
+
+template &lt;typename ElementType&gt;
+
+bool DoublyLinkedList&lt;ElementType&gt;::isExist(const ElementType &amp;element) const
+
+{
+
+    Node&lt;ElementType&gt; *current = head;
+
+    bool isFound = false;
+
+    while (!isFound &amp;&amp; current != nullptr)
+
+    {
+
+        if (current-&gt;info &gt;= element)
+
+        {
+
+            isFound = true;
+
+        }
+
+        else
+
+        {
+
+            current = current-&gt;next;
+
+        }
+
+    }
+
+    if (isFound)
+
+        isFound = (current-&gt;info == element);
+
+    return isFound;
+
+}
+
+  
+
+template &lt;typename ElementType&gt;
+
+void DoublyLinkedList&lt;ElementType&gt;::insertAtHead(const ElementType &amp;element)
+
+{
+
+    Node&lt;ElementType&gt; *newNode = new Node&lt;ElementType&gt;(element);
+
+    if (head == nullptr &amp;&amp; tail == nullptr)
+
+    { // if the list is empty
+
+        head = newNode;
+
+        tail = newNode;
+
+    }
+
+    else
+
+    { // if the list is not empty
+
+        newNode-&gt;next = head;
+
+        head-&gt;back = newNode;
+
+        head = newNode;
+
+    }
+
+    count++;
+
+}
+
+  
+
+template &lt;typename ElementType&gt;
+
+void DoublyLinkedList&lt;ElementType&gt;::insertAtTail(const ElementType &amp;element)
+
+{
+
+    Node&lt;ElementType&gt; *newNode = new Node&lt;ElementType&gt;(element);
+
+    if (head == nullptr &amp;&amp; tail == nullptr)
+
+    { // if the list is empty
+
+        head = newNode;
+
+        tail = newNode;
+
+    }
+
+    else
+
+    { // if the list is not empty
+
+        newNode-&gt;back = tail;
+
+        tail-&gt;next = newNode;
+
+        tail = newNode;
+
+    }
+
+    count++;
+
+}
+
+  
+
+template &lt;typename ElementType&gt;
+
+void DoublyLinkedList&lt;ElementType&gt;::insertAt(const ElementType &amp;element, int index)
+
+{
+
+    if (index &lt; 0 || index &gt; count)
+
+    {
+
+        std::cout &lt;&lt; &quot;Error: Index out of range\n&quot;;
+
+        return;
+
+    }
+
+  
+
+    Node&lt;ElementType&gt; *newNode = new Node&lt;ElementType&gt;(element);
+
+  
+
+    if (index == 0) // index at head
+
+    {
+
+        insertAtHead(element);
+
+        return;
+
+    }
+
+  
+
+    else if (index == count) // index at tail
+
+    {
+
+        insertAtTail(element);
+
+        return;
+
+    }
+
+  
+
+    else
+
+    {
+
+        Node&lt;ElementType&gt; *current = head; // Loop until you find the index
+
+        for (int i = 0; i &lt; index - 1; ++i)
+
+        {
+
+            current = current-&gt;next;
+
+        }
+
+        newNode-&gt;next = current-&gt;next;
+
+        current-&gt;next-&gt;back = newNode;
+
+        current-&gt;next = newNode;
+
+        newNode-&gt;back = current;
+
+    }
+
+    count++;
+
+}
+
+  
+
+template &lt;typename ElementType&gt;
+
+void DoublyLinkedList&lt;ElementType&gt;::removeAtHead()
+
+{
+
+    if (head == nullptr)
+
+    {
+
+        std::cout &lt;&lt; &quot;Error: can't remove item; list is empty.\n&quot;;
+
+        return;
+
+    }
+
+  
+
+    Node&lt;ElementType&gt; *temp = head;
+
+    head = head-&gt;next;
+
+    if (head != nullptr)
+
+    {
+
+        head-&gt;back = nullptr;
+
+    }
+
+    else
+
+    {
+
+        tail = nullptr;
+
+    }
+
+    delete temp;
+
+    count--;
+
+}
+
+template &lt;typename ElementType&gt;
+
+void DoublyLinkedList&lt;ElementType&gt;::removeAtTail()
+
+{
+
+    if (tail == nullptr)
+
+    {
+
+        std::cout &lt;&lt; &quot;Error: can't remove item; list is empty.\n&quot;;
+
+        return;
+
+    }
+
+  
+
+    Node&lt;ElementType&gt; *temp = tail;
+
+    tail = tail-&gt;back;
+
+    if (tail != nullptr)
+
+    {
+
+        tail-&gt;next = nullptr;
+
+    }
+
+    else
+
+    {
+
+        head = nullptr;
+
+    }
+
+    delete temp;
+
+    count--;
+
+};
+
+  
+
+template &lt;typename ElementType&gt;
+
+void DoublyLinkedList&lt;ElementType&gt;::removeAt(int index)
+
+{
+
+    if (isEmpty())
+
+    {
+
+        std::cout &lt;&lt; &quot;Error: List is empty\n&quot;;
+
+        return;
+
+    }
+
+  
+
+    if (index &lt; 0 || index &gt; count)
+
+    {
+
+        std::cout &lt;&lt; &quot;Error: Index out of range\n&quot;;
+
+        return;
+
+    }
+
+  
+
+    if (index == 0)
+
+    {
+
+        removeAtHead();
+
+        return;
+
+    }
+
+  
+
+    else if (index == count - 1) // index at tail
+
+    {
+
+        removeAtTail();
+
+        return;
+
+    }
+
+  
+
+    else
+
+    {
+
+        Node&lt;ElementType&gt; *temp = head;
+
+        for (int i = 0; i &lt; index; ++i)
+
+        {
+
+            temp = temp-&gt;next;
+
+        }
+
+  
+
+        temp-&gt;back-&gt;next = temp-&gt;next;
+
+        temp-&gt;next-&gt;back = temp-&gt;back;
+
+        delete temp;
+
+    }
+
+    count--;
+
+};
+
+  
+
+template &lt;typename ElementType&gt;
+
+ElementType DoublyLinkedList&lt;ElementType&gt;::retrieveAt(int index)
+
+{
+
+    if (isEmpty())
+
+    {
+
+        throw std::runtime_error(&quot;Error: List is empty&quot;);
+
+    }
+
+    if (index &lt; 0 || index &gt; count)
+
+    {
+
+        throw std::runtime_error(&quot;Error: Invalid index, out of range&quot;);
+
+    }
+
+    if (index == 0) // index at head
+
+    {
+
+        return head-&gt;info;
+
+    }
+
+  
+
+    else if (index == count) // index at tail
+
+    {
+
+        return tail-&gt;info;
+
+    }
+
+  
+
+    Node&lt;ElementType&gt; *temp = head;
+
+    for (int i = 0; i &lt; index; ++i)
+
+    {
+
+        temp = temp-&gt;next;
+
+    }
+
+    return temp-&gt;info;
+
+};
+
+  
+
+template &lt;typename ElementType&gt;
+
+void DoublyLinkedList&lt;ElementType&gt;::replaceAt(const ElementType &amp;newElement, int index)
+
+{
+
+    if (isEmpty())
+
+    {
+
+        std::cout &lt;&lt; &quot;Error: List is empty\n&quot;;
+
+        return;
+
+    }
+
+    if (index &lt; 0 || index &gt; count)
+
+    {
+
+        std::cout &lt;&lt; &quot;Error: Index out of range\n&quot;;
+
+        return;
+
+    }
+
+  
+
+    if (index == 0)
+
+    {
+
+        head-&gt;info = newElement;
+
+        return;
+
+    }
+
+  
+
+    else if (index == count)
+
+    {
+
+        tail-&gt;info = newElement;
+
+        return;
+
+    }
+
+  
+
+    Node&lt;ElementType&gt; *temp = head;
+
+    for (int i = 0; i &lt; index; ++i)
+
+    {
+
+        temp = temp-&gt;next;
+
+    }
+
+    temp-&gt;info = newElement;
+
+}
+
+  
+
+template &lt;typename ElementType&gt;
+
+bool DoublyLinkedList&lt;ElementType&gt;::isItemAtEqual(const ElementType &amp;element, int index)
+
+{
+
+    return (retrieveAt(index) == element);
+
+};
+
+  
+
+template &lt;typename ElementType&gt;
+
+void DoublyLinkedList&lt;ElementType&gt;::swap(int firstItemIdx, int secondItemIdx)
+
+{
+
+  
+
+    if (head == nullptr || head-&gt;next == nullptr || firstItemIdx == secondItemIdx)
+
+        return;
+
+  
+
+    Node&lt;ElementType&gt; *fisrtNode = head;
+
+    Node&lt;ElementType&gt; *secondNode = head;
+
+  
+
+    // Finding the correct Nodes
+
+    for (int i = 0; i &lt; firstItemIdx; ++i)
+
+    {
+
+        fisrtNode = fisrtNode-&gt;next;
+
+    }
+
+  
+
+    for (int i = 0; i &lt; secondItemIdx; ++i)
+
+    {
+
+        secondNode = secondNode-&gt;next;
+
+    }
+
+  
+
+    // reverse head and tail
+
+    if (fisrtNode == head)
+
+        head = secondNode;
+
+    else if (secondNode == head)
+
+        head = fisrtNode;
+
+    if (fisrtNode == tail)
+
+        tail = secondNode;
+
+    else if (secondNode == tail)
+
+        tail = fisrtNode;
+
+  
+
+    // First make each node points at the next adjacent node of the other
+
+    Node&lt;ElementType&gt; *temp;
+
+    temp = fisrtNode-&gt;next;
+
+    fisrtNode-&gt;next = secondNode-&gt;next;
+
+    secondNode-&gt;next = temp;
+
+  
+
+    // check if the nodes we pointed at is not the last or first, if so, make them point back at the nodes that we want to swap
+
+    if (fisrtNode-&gt;next != nullptr)
+
+        fisrtNode-&gt;next-&gt;back = fisrtNode;
+
+    if (secondNode-&gt;next != nullptr)
+
+        secondNode-&gt;next-&gt;back = secondNode;
+
+  
+
+    // vice versa
+
+    temp = fisrtNode-&gt;back;
+
+    fisrtNode-&gt;back = secondNode-&gt;back;
+
+    secondNode-&gt;back = temp;
+
+  
+
+    if (fisrtNode-&gt;back != nullptr)
+
+        fisrtNode-&gt;back-&gt;next = fisrtNode;
+
+    if (secondNode-&gt;back != nullptr)
+
+        secondNode-&gt;back-&gt;next = secondNode;
+
+};
+</code></pre>
+
+            </div>
+            
+            <!-- Series Navigation (if post is part of a series) -->
+            
+            <nav class="series-navigation">
+                
+                    <a href="/cs214-datastructures/Insertion Sort - Sorting Algorithms.html" class="nav-link">
+                        <span class="nav-link-label"><i class="fas fa-arrow-left"></i> Previous</span>
+                        <span class="nav-link-title">Insertion Sort</span>
+                    </a>
+                
+                
+                
+                    <a href="/cs214-datastructures/Merge Sort - Sorting Algorithms.html" class="nav-link" style="text-align: right;">
+                        <span class="nav-link-label">Next <i class="fas fa-arrow-right"></i></span>
+                        <span class="nav-link-title">Merge Sort</span>
+                    </a>
+                
+            </nav>
+            
+            
+            <footer class="post-footer">
+                
+                    <a href="/cs214-datastructures/" class="back-link"><i class="fas fa-book"></i> Back to DSA</a>
+                    <a href="/" class="back-link">&larr; Back to Home</a>
+                
+            </footer>
+        </article>
+    </div>
+    
+    <script>
+        const toggleBtn = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        function setTheme(mode) {
+            document.body.classList.toggle('dark-mode', mode === 'dark');
+            themeIcon.className = mode === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+            localStorage.setItem('theme', mode);
+        }
+        toggleBtn.addEventListener('click', () => {
+            const isDark = document.body.classList.toggle('dark-mode');
+            themeIcon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') setTheme('dark');
+    </script>
+</body>
+</html>

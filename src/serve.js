@@ -102,13 +102,13 @@ async function serve(projectDir = '.', port = 3000) {
     
     // Start server
     const server = app.listen(port, () => {
-        console.log(`🌍 Server running at http://localhost:${port}`);
-        console.log('👀 Watching for file changes...');
+        console.log(`Server running at http://localhost:${port}`);
+        console.log('Watching for file changes...');
     });
     
     const watchPaths = [
         path.join(projectDir, 'content'),
-        path.join(projectDir, 'pages'), // Add this line to watch pages directory
+        path.join(projectDir, 'pages'),
         path.join(projectDir, 'layout'),
         path.join(projectDir, 'static'),
         path.join(projectDir, 'config.json')

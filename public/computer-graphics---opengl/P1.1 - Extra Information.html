@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }} - {{ site.name }}</title>
+    <title>P1.1 Extra Information about OpenGL - Albasel</title>
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -85,70 +85,94 @@
     </style>
 </head>
 <body>
-    {% include "_navbar.html" %}
+    <nav class="navbar">
+    <div class="navbar-container">
+        <a href="/" class="navbar-title">Albasel</a>
+        <ul class="navbar-links">
+            <li><a href="/posts.html">Posts</a></li>
+            <li><a href="/categories.html">Categories</a></li>
+            <li><a href="/aboutme.html">About Me</a></li>
+        </ul>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+            <i class="fa-solid fa-moon" id="theme-icon"></i>
+        </button>
+    </div>
+</nav>
 
     <div class="container">
         <!-- Series Info (if post is part of a series) -->
-        {% if seriesInfo %}
+        
         <div class="series-info">
             <div>
                 <i class="fas fa-book"></i>
-                <strong>Part {{ seriesInfo.currentIndex }} of {{ seriesInfo.totalPosts }}</strong> in
-                <a href="/{{ seriesInfo.slug }}/">{{ seriesInfo.title }}</a>
+                <strong>Part 2 of 11</strong> in
+                <a href="/computer-graphics---opengl/">Computer Graphics - OpenGL</a>
             </div>
             <div class="series-progress">
-                {{ seriesInfo.currentIndex }}/{{ seriesInfo.totalPosts }}
+                2/11
             </div>
         </div>
-        {% endif %}
+        
 
         <!-- Post Content -->
         <article class="post">
             <header class="post-header">
-                <h1>{{ title }}</h1>
+                <h1>P1.1 Extra Information about OpenGL</h1>
                 <div class="post-meta">
-                    <time>{{ date }}</time>
-                    {% if category %}<span class="category">{{ category }}</span>{% endif %}
-                    {% if series %}<span class="series-tag"><i class="fas fa-book"></i> Series</span>{% endif %}
+                    <time>2024-01-01</time>
+                    <span class="category">OpenGL</span>
+                    <span class="series-tag"><i class="fas fa-book"></i> Series</span>
                 </div>
-                {% if image %}
-                <img src="{{ image }}" alt="{{ title }}" class="post-image">
-                {% endif %}
+                
+                <img src="/images/opengl.jpg" alt="P1.1 Extra Information about OpenGL" class="post-image">
+                
             </header>
             <div class="post-content">
-                {{ content | safe }}
+                <h2>I still don’t know what (OpenGL, GLEW, GLFW) are…</h2>
+<p><strong>I’ve been searching, here is what i found.</strong></p>
+<p>so, OpenGL is not a library.
+It is a specification.
+Just a few (quite a few, actually) pages of text!
+You can see it here <a href="https://registry.khronos.org/OpenGL/specs/gl/glspec44.core.pdf">https://registry.khronos.org/OpenGL/specs/gl/glspec44.core.pdf</a> .</p>
+<p>Then we can conclude that you can’t “install” OpenGL. But, you might ask, <strong>where does the code exist?</strong></p>
+<p>Well, <strong>OpenGL</strong> standard is already implemented inside of the your <strong>OS GPU</strong> driver, by manufacturers, without any kind of agreements on the actual implementation, and, so, different drivers may achieve the same functionality in a different ways. and we use <strong>opengl32.lib</strong> to communicate with this driver.</p>
+<p>to start actually displaying something in the screen, you need to have access to 2 things.</p>
+<ul>
+<li><strong>the concrete OpenGL implementation functionality.</strong></li>
+<li><strong>Setup the windowing system &amp; OpenGL context.</strong></li>
+</ul>
+<p>Both of these things require some interaction with the operating system: In order to load OpenGL implementation function pointers, and, also, in order to create a window.</p>
+<p><strong>So, we use a library to do that for us, here comes GLEW</strong></p>
+<p>GLEW (stands for OpenGL Extension Wrangler Library) is a cross-platform C/C++ library that helps in querying and loading OpenGL extensions.</p>
+<p>OpenGL extensions are a means for OpenGL implementations to provide new or expanded functionality that the core of OpenGL does not provide</p>
+<p>and GLFW for Window Handling.</p>
+
             </div>
             
             <!-- Series Navigation (if post is part of a series) -->
-            {% if seriesInfo %}
+            
             <nav class="series-navigation">
-                {% if seriesInfo.previousPost %}
-                    <a href="{{ seriesInfo.previousPost.url }}" class="nav-link">
-                        <span class="nav-link-label"><i class="fas fa-arrow-left"></i> Previous</span>
-                        <span class="nav-link-title">{{ seriesInfo.previousPost.title }}</span>
-                    </a>
-                {% else %}
-                    <div class="nav-placeholder"></div>
-                {% endif %}
                 
-                {% if seriesInfo.nextPost %}
-                    <a href="{{ seriesInfo.nextPost.url }}" class="nav-link" style="text-align: right;">
-                        <span class="nav-link-label">Next <i class="fas fa-arrow-right"></i></span>
-                        <span class="nav-link-title">{{ seriesInfo.nextPost.title }}</span>
+                    <a href="/computer-graphics---opengl/P1 - Getting Started.html" class="nav-link">
+                        <span class="nav-link-label"><i class="fas fa-arrow-left"></i> Previous</span>
+                        <span class="nav-link-title">P1 Getting Started with OpenGL</span>
                     </a>
-                {% else %}
-                    <div class="nav-placeholder"></div>
-                {% endif %}
+                
+                
+                
+                    <a href="/computer-graphics---opengl/P2 - Vertex Buffers.html" class="nav-link" style="text-align: right;">
+                        <span class="nav-link-label">Next <i class="fas fa-arrow-right"></i></span>
+                        <span class="nav-link-title">P2 Vertex Buffers</span>
+                    </a>
+                
             </nav>
-            {% endif %}
+            
             
             <footer class="post-footer">
-                {% if series %}
-                    <a href="/{{ series }}/" class="back-link"><i class="fas fa-book"></i> Back to {{ seriesInfo.title if seriesInfo else 'Series' }}</a>
+                
+                    <a href="/computer-graphics---opengl/" class="back-link"><i class="fas fa-book"></i> Back to Computer Graphics - OpenGL</a>
                     <a href="/" class="back-link">&larr; Back to Home</a>
-                {% else %}
-                    <a href="/" class="back-link">&larr; Back to Home</a>
-                {% endif %}
+                
             </footer>
         </article>
     </div>

@@ -1,7 +1,6 @@
 import React from 'react';
 import Sidebar from './SideBar.jsx';
 import MainEditor from './MainEditor.jsx';
-import StatusBar from './StatusBar.jsx';
 import ErrorBanner from './ErrorBanner.jsx';
 
 const EditorLayout = ({
@@ -11,13 +10,14 @@ const EditorLayout = ({
   error,
   hasModifiedFiles,
   
-  // App settings
+  // App settings state
   isPreviewMode,
   isDarkMode,
   
   // File manager actions
   onFileSelect,
   onCreateFile,
+  onCreateFolder,
   onDeleteFile,
   onContentChange,
   onSave,
@@ -25,34 +25,37 @@ const EditorLayout = ({
   onRefreshFiles,
   onClearError,
   
-  // App setting actions
+  // App settings actions
   onTogglePreview,
   onToggleDarkMode,
   
-  // Editor specific
+  // Editor specific props
   onInsert,
   insertRef
 }) => {
   return (
-    <div className={`flex h-screen overflow-hidden ${isDarkMode ? 'dark bg-gray-900' : 'bg-white'}`}>
-      <Sidebar 
-        files={files}
-        selectedFile={selectedFile}
-        onFileSelect={onFileSelect}
-        onCreateFile={onCreateFile}
-        onDeleteFile={onDeleteFile}
-        isDarkMode={isDarkMode}
-      />
-      
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+    <div className={`h-screen flex flex-col ${isDarkMode ? 'dark bg-gray-900' : 'bg-white'}`}>
+      {error && (
         <ErrorBanner 
-          error={error}
+          message={error} 
+          onClose={onClearError}
+          onRefresh={onRefreshFiles}
           isDarkMode={isDarkMode}
-          onRetry={onRefreshFiles}
-          onDismiss={onClearError}
+        />
+      )}
+      
+      <div className="flex flex-1 min-h-0">
+        <Sidebar
+          files={files}
+          selectedFile={selectedFile}
+          onFileSelect={onFileSelect}
+          onCreateFile={onCreateFile}
+          onCreateFolder={onCreateFolder}
+          onDeleteFile={onDeleteFile}
+          isDarkMode={isDarkMode}
         />
         
-        <MainEditor 
+        <MainEditor
           selectedFile={selectedFile}
           isPreviewMode={isPreviewMode}
           isDarkMode={isDarkMode}
@@ -64,12 +67,6 @@ const EditorLayout = ({
           onTogglePreview={onTogglePreview}
           onToggleDarkMode={onToggleDarkMode}
           insertRef={insertRef}
-        />
-        
-        <StatusBar 
-          selectedFile={selectedFile}
-          error={error}
-          isDarkMode={isDarkMode}
         />
       </div>
     </div>
