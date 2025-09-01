@@ -177,23 +177,25 @@ export const useFileManager = () => {
 
   const handleCreateFile = async (folderPath = '', fileName = null) => {
     console.log('handleCreateFile: folderPath:', folderPath, 'fileName:', fileName);
-    
+
     // Get filename from user if not provided
     const finalFileName = fileName || prompt('Enter file name (with .md extension):');
     if (!finalFileName) return;
-    
+
     const validation = validateFileName(finalFileName);
     if (!validation.valid) {
       alert(validation.error);
       return;
     }
-    
+
+    // Normalize folderPath so it’s always relative to "content"
+    let cleanFolderPath = folderPath.replace(/^content\//, '');
+
     // Build the full file path
-    const directory = 'content';
-    const filePath = folderPath 
-      ? `${directory}/${folderPath}/${finalFileName}` 
-      : `${directory}/${finalFileName}`;
-    
+    const filePath = cleanFolderPath
+      ? `content/${cleanFolderPath}/${finalFileName}`
+      : `content/${finalFileName}`;
+
     // Check if file already exists
     if (files.some(file => file.path === filePath)) {
       alert('A file with this name already exists!');
@@ -202,26 +204,19 @@ export const useFileManager = () => {
 
     try {
       console.log('handleCreateFile: Creating file on server:', filePath);
-      
-      // Create default content
-      const defaultContent = createDefaultContent(finalFileName, directory);
-      
-      // Save the file to the server first
+
+      const defaultContent = createDefaultContent(finalFileName, 'content');
+
       await fileService.saveFile(filePath, defaultContent);
-      
+
       console.log('handleCreateFile: File created on server, refreshing file list...');
-      
-      // Refresh the file list to get the new file from the server
       await loadFiles();
-      
-      // Select the new file
+
       const newFile = files.find(f => f.path === filePath);
       if (newFile) {
         await handleFileSelect(newFile);
       }
-      
-      console.log('handleCreateFile: Successfully created and selected new file');
-      
+
     } catch (err) {
       console.error('handleCreateFile: Error creating file:', err);
       setError(`Error creating file "${finalFileName}": ${err.message}`);
