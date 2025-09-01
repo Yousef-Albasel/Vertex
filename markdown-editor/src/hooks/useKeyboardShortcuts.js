@@ -1,48 +1,49 @@
 import { useEffect } from 'react';
 
-export const useKeyboardShortcuts = ({ 
-  onSave, 
-  onSaveAll, 
-  onCreateFile, 
+export const useKeyboardShortcuts = ({
+  onSave,
+  onSaveAll,
+  onCreateFile,
   onTogglePreview,
-  disabled = false 
+  onToggleSidebar,
+  disabled = false
 }) => {
   useEffect(() => {
-    if (disabled) return;
+    const handleKeyDown = (e) => {
+      if (disabled) return;
 
-    const handleKeyDown = (event) => {
-      // Ctrl+S or Cmd+S to save
-      if ((event.ctrlKey || event.metaKey) && event.key === 's') {
-        event.preventDefault();
-        if (event.shiftKey) {
-          // Ctrl+Shift+S or Cmd+Shift+S to save all
-          onSaveAll?.();
-        } else {
-          // Regular save
-          onSave?.();
-        }
-        return;
+      // Ctrl+S - Save current file
+      if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        onSave();
       }
-
-      // Ctrl+N or Cmd+N to create new file
-      if ((event.ctrlKey || event.metaKey) && event.key === 'n') {
-        event.preventDefault();
-        onCreateFile?.();
-        return;
+      
+      // Ctrl+Shift+S - Save all files
+      if (e.ctrlKey && e.shiftKey && e.key === 'S') {
+        e.preventDefault();
+        onSaveAll();
       }
-
-      // Ctrl+P or Cmd+P to toggle preview
-      if ((event.ctrlKey || event.metaKey) && event.key === 'p') {
-        event.preventDefault();
-        onTogglePreview?.();
-        return;
+      
+      // Ctrl+N - New file
+      if (e.ctrlKey && e.key === 'n') {
+        e.preventDefault();
+        onCreateFile();
+      }
+      
+      // Ctrl+P - Toggle preview
+      if (e.ctrlKey && e.key === 'p') {
+        e.preventDefault();
+        onTogglePreview();
+      }
+      
+      // Ctrl+B - Toggle sidebar
+      if (e.ctrlKey && e.key === 'b') {
+        e.preventDefault();
+        onToggleSidebar();
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [onSave, onSaveAll, onCreateFile, onTogglePreview, disabled]);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onSave, onSaveAll, onCreateFile, onTogglePreview, onToggleSidebar, disabled]);
 };

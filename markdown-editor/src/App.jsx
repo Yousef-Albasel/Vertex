@@ -18,6 +18,7 @@ export default function App() {
     onSaveAll: fileManager.handleSaveAll,
     onCreateFile: () => fileManager.handleCreateFile(''),
     onTogglePreview: appSettings.handleTogglePreview,
+    onToggleSidebar: appSettings.handleToggleSidebar || (() => {}), // Add fallback
     disabled: fileManager.loading
   });
 
@@ -44,6 +45,7 @@ export default function App() {
       // App settings state
       isPreviewMode={appSettings.isPreviewMode}
       isDarkMode={appSettings.isDarkMode}
+      isSidebarVisible={appSettings.isSidebarVisible}
       
       // File manager actions
       onFileSelect={fileManager.handleFileSelect}
@@ -59,6 +61,7 @@ export default function App() {
       // App settings actions
       onTogglePreview={appSettings.handleTogglePreview}
       onToggleDarkMode={appSettings.handleToggleDarkMode}
+      onToggleSidebar={appSettings.handleToggleSidebar}
       
       // Editor specific props
       onInsert={handleInsert}

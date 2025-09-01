@@ -7,6 +7,7 @@ const MainEditor = ({
   selectedFile,
   isPreviewMode,
   isDarkMode,
+  isSidebarVisible,
   hasModifiedFiles,
   onContentChange,
   onInsert,
@@ -14,6 +15,7 @@ const MainEditor = ({
   onSaveAll,
   onTogglePreview,
   onToggleDarkMode,
+  onToggleSidebar,
   insertRef
 }) => {
   return (
@@ -26,6 +28,8 @@ const MainEditor = ({
         onTogglePreview={onTogglePreview}
         isDarkMode={isDarkMode}
         onToggleDarkMode={onToggleDarkMode}
+        isSidebarVisible={isSidebarVisible}
+        onToggleSidebar={onToggleSidebar}
         selectedFile={selectedFile}
         hasModifiedFiles={hasModifiedFiles}
       />

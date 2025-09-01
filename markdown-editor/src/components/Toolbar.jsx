@@ -16,7 +16,9 @@ import {
   Save,
   SaveAll,
   Moon,
-  Sun
+  Sun,
+  Sidebar,
+  SidebarOpen
 } from 'lucide-react';
 
 export default function Toolbar({ 
@@ -27,6 +29,8 @@ export default function Toolbar({
   onTogglePreview, 
   isDarkMode, 
   onToggleDarkMode,
+  isSidebarVisible,
+  onToggleSidebar,
   selectedFile,
   hasModifiedFiles
 }) {
@@ -56,6 +60,21 @@ export default function Toolbar({
         ? 'bg-gray-900 border-gray-700' 
         : 'bg-gray-50 border-gray-200'
     }`}>
+      {/* Sidebar toggle - leftmost */}
+      <button
+        onClick={onToggleSidebar}
+        className={`p-2 rounded transition-colors ${
+          isDarkMode
+            ? 'hover:bg-gray-700 text-gray-300'
+            : 'hover:bg-gray-200 text-gray-700'
+        }`}
+        title={isSidebarVisible ? 'Hide Sidebar' : 'Show Sidebar'}
+      >
+        {isSidebarVisible ? <SidebarOpen size={16} /> : <Sidebar size={16} />}
+      </button>
+      
+      <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+      
       {toolbarItems.map((item, index) => (
         <button
           key={index}

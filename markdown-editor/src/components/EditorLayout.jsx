@@ -14,6 +14,7 @@ const EditorLayout = ({
   // App settings state
   isPreviewMode,
   isDarkMode,
+  isSidebarVisible,
   
   // File manager actions
   onFileSelect,
@@ -29,6 +30,7 @@ const EditorLayout = ({
   // App settings actions
   onTogglePreview,
   onToggleDarkMode,
+  onToggleSidebar,
   
   // Editor specific props
   onInsert,
@@ -46,20 +48,25 @@ const EditorLayout = ({
       )}
       
       <div className="flex flex-1 min-h-0">
-        <Sidebar
-          files={files}
-          selectedFile={selectedFile}
-          onFileSelect={onFileSelect}
-          onCreateFile={onCreateFile}
-          onCreateFolder={onCreateFolder}
-          onDeleteFile={onDeleteFile}
-          isDarkMode={isDarkMode}
-        />
+        {isSidebarVisible && (
+          <div className="flex-shrink-0 transition-all duration-300 ease-in-out">
+            <Sidebar
+              files={files}
+              selectedFile={selectedFile}
+              onFileSelect={onFileSelect}
+              onCreateFile={onCreateFile}
+              onCreateFolder={onCreateFolder}
+              onDeleteFile={onDeleteFile}
+              isDarkMode={isDarkMode}
+            />
+          </div>
+        )}
         
         <MainEditor
           selectedFile={selectedFile}
           isPreviewMode={isPreviewMode}
           isDarkMode={isDarkMode}
+          isSidebarVisible={isSidebarVisible}
           hasModifiedFiles={hasModifiedFiles}
           onContentChange={onContentChange}
           onInsert={onInsert}
@@ -67,6 +74,7 @@ const EditorLayout = ({
           onSaveAll={onSaveAll}
           onTogglePreview={onTogglePreview}
           onToggleDarkMode={onToggleDarkMode}
+          onToggleSidebar={onToggleSidebar}
           insertRef={insertRef}
         />
       </div>
@@ -75,6 +83,9 @@ const EditorLayout = ({
         selectedFile={selectedFile}
         error={error}
         isDarkMode={isDarkMode}
+        isSidebarVisible={isSidebarVisible}
+        totalFiles={files?.length || 0}
+        modifiedFiles={files?.filter(f => f.modified)?.length || 0}
       />
     </div>
   );
