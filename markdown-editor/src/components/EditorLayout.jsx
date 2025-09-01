@@ -2,6 +2,7 @@ import React from 'react';
 import Sidebar from './SideBar.jsx';
 import MainEditor from './MainEditor.jsx';
 import ErrorBanner from './ErrorBanner.jsx';
+import StatusBar from './StatusBar.jsx';
 
 const EditorLayout = ({
   // File manager state
@@ -69,6 +70,12 @@ const EditorLayout = ({
           insertRef={insertRef}
         />
       </div>
+      
+      <StatusBar 
+        selectedFile={selectedFile}
+        error={error}
+        isDarkMode={isDarkMode}
+      />
     </div>
   );
 };
