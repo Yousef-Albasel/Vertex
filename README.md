@@ -6,3 +6,6 @@ TODO:
 - Add Common keyboard binds to make editing easier
 - Make sure to make Hierarchical Listing support
 - Add support to graphics engine (Should be optional to install or not)
+- Make the sidebar retractable 
+- Make the vertex portal site
+- Production

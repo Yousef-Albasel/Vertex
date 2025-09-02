@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nextjs - Albasel</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .series-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .series-meta {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        .series-meta span {
+            background: rgba(255,255,255,0.2);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        .series-posts {
+            display: grid;
+            gap: 1.5rem;
+        }
+        .series-post-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .series-post-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+        }
+        .post-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 2rem;
+            font-weight: bold;
+            margin-right: 1rem;
+            font-size: 0.9rem;
+        }
+        .post-title {
+            color: #333;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .post-title:hover {
+            color: #667eea;
+        }
+        .post-description {
+            color: #666;
+            margin-top: 0.5rem;
+            line-height: 1.6;
+        }
+        .post-date {
+            color: #999;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        .series-description {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        body.dark-mode .series-post-card {
+            background: #2a2a2a;
+            color: #e0e0e0;
+        }
+        body.dark-mode .post-title {
+            color: #e0e0e0;
+        }
+        body.dark-mode .post-title:hover {
+            color: #667eea;
+        }
+        body.dark-mode .series-description {
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+    <div class="navbar-container">
+        <a href="/" class="navbar-title">Albasel</a>
+        <ul class="navbar-links">
+            <li><a href="/posts.html">Posts</a></li>
+            <li><a href="/categories.html">Categories</a></li>
+            <li><a href="/aboutme.html">About Me</a></li>
+        </ul>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+            <i class="fa-solid fa-moon" id="theme-icon"></i>
+        </button>
+    </div>
+</nav>
+
+    <div class="container">
+        <!-- Series Header -->
+        <div class="series-header">
+            <h1>nextjs</h1>
+            
+            <div class="series-meta">
+                <span><i class="fas fa-book"></i> 2 Posts</span>
+                
+                <span><i class="fas fa-calendar"></i> 2025-09-01</span>
+            </div>
+        </div>
+
+        <!-- Series Description -->
+        
+        <div class="series-description">
+            <h1>nextjs</h1>
+<p>This is a series about nextjs.</p>
+
+        </div>
+        
+
+        <!-- Series Posts -->
+        <div class="series-posts">
+            
+            <div class="series-post-card">
+                <div style="display: flex; align-items: flex-start;">
+                    <div class="post-number">1</div>
+                    <div style="flex: 1;">
+                        <a href="/nextjs/Data Fetching in Nextjs.html" class="post-title">Data Fetching in Nextjs</a>
+                        
+                        <div class="post-date">2025-09-01</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="series-post-card">
+                <div style="display: flex; align-items: flex-start;">
+                    <div class="post-number">2</div>
+                    <div style="flex: 1;">
+                        <a href="/nextjs/NextJS Notes 1.html" class="post-title">NextJS Notes 1</a>
+                        
+                            <div class="post-description">Next.js development notes from JS Mastery channel</div>
+                        
+                        <div class="post-date">2025-09-01</div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Back to Posts -->
+        <div style="margin-top: 2rem; text-align: center;">
+            <a href="/posts" class="back-link">← View All Posts</a>
+        </div>
+    </div>
+
+    <script>
+        const toggleBtn = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        function setTheme(mode) {
+            document.body.classList.toggle('dark-mode', mode === 'dark');
+            themeIcon.className = mode === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+            localStorage.setItem('theme', mode);
+        }
+        toggleBtn.addEventListener('click', () => {
+            const isDark = document.body.classList.toggle('dark-mode');
+            themeIcon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') setTheme('dark');
+    </script>
+</body>
+</html>
