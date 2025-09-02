@@ -52,6 +52,8 @@ export default function App() {
       onCreateFile={fileManager.handleCreateFile}
       onCreateFolder={fileManager.handleCreateFolder}
       onDeleteFile={fileManager.handleDeleteFile}
+      onRenameFile={fileManager.handleRenameFile}
+      onRenameFolder={fileManager.handleRenameFolder}
       onContentChange={fileManager.handleContentChange}
       onSave={fileManager.handleSave}
       onSaveAll={fileManager.handleSaveAll}

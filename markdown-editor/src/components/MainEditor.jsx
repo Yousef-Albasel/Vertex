@@ -18,10 +18,25 @@ const MainEditor = ({
   onToggleSidebar,
   insertRef
 }) => {
+  // Handle text formatting
+  const handleFormatText = (format) => {
+    if (insertRef.current && insertRef.current.format) {
+      insertRef.current.format(format);
+    }
+  };
+
+  // Handle regular insert (for non-formatting buttons like Image)
+  const handleInsert = (text) => {
+    if (insertRef.current && insertRef.current.insert) {
+      insertRef.current.insert(text);
+    }
+  };
+
   return (
     <div className="flex-1 flex flex-col min-h-0">
       <Toolbar 
-        onInsert={onInsert}
+        onInsert={handleInsert}
+        onFormatText={handleFormatText}
         onSave={onSave}
         onSaveAll={onSaveAll}
         isPreviewMode={isPreviewMode}

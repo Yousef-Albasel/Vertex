@@ -23,6 +23,7 @@ import {
 
 export default function Toolbar({ 
   onInsert, 
+  onFormatText,
   onSave, 
   onSaveAll, 
   isPreviewMode, 
@@ -35,25 +36,84 @@ export default function Toolbar({
   hasModifiedFiles
 }) {
   const toolbarItems = [
-    { icon: Heading1, action: () => onInsert('# '), tooltip: 'Heading 1' },
-    { icon: Heading2, action: () => onInsert('## '), tooltip: 'Heading 2' },
-    { icon: Heading3, action: () => onInsert('### '), tooltip: 'Heading 3' },
-    { icon: Bold, action: () => onInsert('**text**'), tooltip: 'Bold' },
-    { icon: Italic, action: () => onInsert('*text*'), tooltip: 'Italic' },
-    { icon: Underline, action: () => onInsert('<u>text</u>'), tooltip: 'Underline' },
-    { icon: List, action: () => onInsert('\n* '), tooltip: 'Bullet List' },
-    { icon: ListOrdered, action: () => onInsert('\n1. '), tooltip: 'Numbered List' },
-    { icon: Link, action: () => onInsert('[text](url)'), tooltip: 'Link' },
-    { icon: Image, action: () => onInsert('![alt](url)'), tooltip: 'Image' },
-    { icon: Code, action: () => onInsert('`code`'), tooltip: 'Inline Code' },
-    { icon: Quote, action: () => onInsert('\n> '), tooltip: 'Blockquote' },
+    { 
+      icon: Heading1, 
+      action: () => onFormatText('h1'), 
+      tooltip: 'Heading 1 (Ctrl+1)',
+      shortcut: 'Ctrl+1'
+    },
+    { 
+      icon: Heading2, 
+      action: () => onFormatText('h2'), 
+      tooltip: 'Heading 2 (Ctrl+2)',
+      shortcut: 'Ctrl+2'
+    },
+    { 
+      icon: Heading3, 
+      action: () => onFormatText('h3'), 
+      tooltip: 'Heading 3 (Ctrl+3)',
+      shortcut: 'Ctrl+3'
+    },
+    { 
+      icon: Bold, 
+      action: () => onFormatText('bold'), 
+      tooltip: 'Bold (Ctrl+B)',
+      shortcut: 'Ctrl+B'
+    },
+    { 
+      icon: Italic, 
+      action: () => onFormatText('italic'), 
+      tooltip: 'Italic (Ctrl+I)',
+      shortcut: 'Ctrl+I'
+    },
+    { 
+      icon: Underline, 
+      action: () => onFormatText('underline'), 
+      tooltip: 'Underline (Ctrl+U)',
+      shortcut: 'Ctrl+U'
+    },
+    { 
+      icon: List, 
+      action: () => onFormatText('list'), 
+      tooltip: 'Bullet List (Ctrl+Shift+L)',
+      shortcut: 'Ctrl+Shift+L'
+    },
+    { 
+      icon: ListOrdered, 
+      action: () => onFormatText('orderedlist'), 
+      tooltip: 'Numbered List (Ctrl+Shift+O)',
+      shortcut: 'Ctrl+Shift+O'
+    },
+    { 
+      icon: Link, 
+      action: () => onFormatText('link'), 
+      tooltip: 'Link (Ctrl+K)',
+      shortcut: 'Ctrl+K'
+    },
+    { 
+      icon: Image, 
+      action: () => onInsert('![alt](url)'), 
+      tooltip: 'Image',
+      shortcut: null
+    },
+    { 
+      icon: Code, 
+      action: () => onFormatText('code'), 
+      tooltip: 'Inline Code (Ctrl+`)',
+      shortcut: 'Ctrl+`'
+    },
+    { 
+      icon: Quote, 
+      action: () => onFormatText('quote'), 
+      tooltip: 'Blockquote (Ctrl+Shift+>)',
+      shortcut: 'Ctrl+Shift+>'
+    },
   ];
 
   const handleCodeBlock = () => {
-    onInsert('\n```\ncode here\n```\n');
+    onFormatText('codeblock');
   };
 
-  
   return (
     <div className={`flex items-center gap-1 p-2 border-b flex-wrap ${
       isDarkMode 
@@ -68,7 +128,7 @@ export default function Toolbar({
             ? 'hover:bg-gray-700 text-gray-300'
             : 'hover:bg-gray-200 text-gray-700'
         }`}
-        title={isSidebarVisible ? 'Hide Sidebar' : 'Show Sidebar'}
+        title={isSidebarVisible ? 'Hide Sidebar (Ctrl+Shift+B)' : 'Show Sidebar (Ctrl+Shift+B)'}
       >
         {isSidebarVisible ? <SidebarOpen size={16} /> : <Sidebar size={16} />}
       </button>
@@ -91,7 +151,20 @@ export default function Toolbar({
         </button>
       ))}
       
-      <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+      {/* Code block button */}
+      <button
+        onClick={handleCodeBlock}
+        className={`p-2 rounded transition-colors ${
+          isDarkMode
+            ? 'hover:bg-gray-700 text-gray-300'
+            : 'hover:bg-gray-200 text-gray-700'
+        }`}
+        title="Code Block (Ctrl+Shift+`)"
+        disabled={!selectedFile}
+      >
+        <Code size={16} />
+        <span className="text-xs ml-1">{ }</span>
+      </button>
       
       <div className="ml-auto flex gap-2">
         <button
@@ -113,7 +186,7 @@ export default function Toolbar({
               ? 'hover:bg-gray-700 text-gray-300'
               : 'hover:bg-gray-200 text-gray-700'
           }`}
-          title={isPreviewMode ? 'Show Editor' : 'Show Preview'}
+          title={isPreviewMode ? 'Show Editor (Ctrl+P)' : 'Show Preview (Ctrl+P)'}
           disabled={!selectedFile}
         >
           {isPreviewMode ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -130,7 +203,7 @@ export default function Toolbar({
                 ? 'hover:bg-gray-700 text-blue-400'
                 : 'hover:bg-gray-200 text-blue-600'
             }`}
-            title="Save All Files"
+            title="Save All Files (Ctrl+Shift+S)"
           >
             <SaveAll size={16} />
             <span className="hidden sm:inline">Save All</span>
@@ -148,7 +221,7 @@ export default function Toolbar({
                 ? 'hover:bg-gray-700 text-gray-500'
                 : 'hover:bg-gray-200 text-gray-400'
           }`}
-          title="Save File"
+          title="Save File (Ctrl+S)"
           disabled={!selectedFile}
         >
           <Save size={16} />

@@ -62,6 +62,69 @@ export const fileService = {
     return response.json();
   },
 
+  // Rename a file
+  async renameFile(oldPath, newName) {
+    try {
+      // First, get the file content
+      const fileData = await this.loadFileContent(oldPath);
+      
+      // Determine new path
+      const pathParts = oldPath.split('/');
+      pathParts[pathParts.length - 1] = newName;
+      const newPath = pathParts.join('/');
+      
+      // Save file with new name
+      await this.saveFile(newPath, fileData.content);
+      
+      // Delete old file
+      await this.deleteFile(oldPath);
+      
+      return { success: true, newPath };
+    } catch (error) {
+      throw new Error(`Failed to rename file: ${error.message}`);
+    }
+  },
+
+  // Rename a folder (client-side implementation)
+  async renameFolder(oldPath, newName) {
+    try {
+      // Get all files in the folder
+      const allFiles = await this.loadFiles();
+      const folderFiles = allFiles.filter(file => file.path.startsWith(oldPath + '/'));
+      
+      if (folderFiles.length === 0) {
+        // Empty folder - just create the new folder
+        const pathParts = oldPath.split('/');
+        pathParts[pathParts.length - 1] = newName;
+        const newPath = pathParts.join('/');
+        
+        await this.createFolder(newPath, false);
+        return { success: true, newPath };
+      }
+      
+      // For folders with files, we need to move each file
+      const pathParts = oldPath.split('/');
+      pathParts[pathParts.length - 1] = newName;
+      const newFolderPath = pathParts.join('/');
+      
+      // Create new folder
+      await this.createFolder(newFolderPath, false);
+      
+      // Move all files to the new folder
+      for (const file of folderFiles) {
+        const fileData = await this.loadFileContent(file.path);
+        const newFilePath = file.path.replace(oldPath, newFolderPath);
+        
+        await this.saveFile(newFilePath, fileData.content);
+        await this.deleteFile(file.path);
+      }
+      
+      return { success: true, newPath: newFolderPath };
+    } catch (error) {
+      throw new Error(`Failed to rename folder: ${error.message}`);
+    }
+  },
+
   // Create a folder
   async createFolder(folderPath, createIndex = false) {
     const response = await fetch(`${API_BASE}/folders`, {

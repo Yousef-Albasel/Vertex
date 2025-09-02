@@ -128,6 +128,22 @@ export const useFileManager = () => {
     }
   };
 
+  const handleRenameFile = async (file, newName) => {
+    try {
+      console.log('Renaming file:', file.path, 'to:', newName);
+
+      await fileService.renameFile(file.path, newName);
+      console.log('File renamed successfully');
+
+      // Refresh files list after rename
+      await loadFiles();
+
+    } catch (err) {
+      console.error('Error renaming file:', err);
+      setError(`Error renaming file: ${err.message}`);
+    }
+  };
+
   const handleFileSelect = async (file) => {
     console.log('handleFileSelect:', file);
     if (file.content !== undefined) {
@@ -173,6 +189,22 @@ export const useFileManager = () => {
     
     setFiles(updatedFiles);
     setSelectedFile({ ...selectedFile, content: newContent, modified: true });
+  };
+
+
+    const handleRenameFolder = async (folder, newName) => {
+    try {
+      console.log('Renaming folder:', folder.path, 'to:', newName);
+      
+      await fileService.renameFolder(folder.path, newName);
+      console.log('Folder renamed successfully');
+      
+      // Refresh files list
+      await loadFiles();
+    } catch (err) {
+      console.error('Error renaming folder:', err);
+      setError(`Error renaming folder: ${err.message}`);
+    }
   };
 
   const handleCreateFile = async (folderPath = '', fileName = null) => {
@@ -382,8 +414,10 @@ export const useFileManager = () => {
     handleCreateFolder,
     handleDeleteFile,
     handleSave,
+    handleRenameFolder,
     handleSaveAll,
     handleRefreshFiles,
+    handleRenameFile,
     clearError,
     
     // Computed values
