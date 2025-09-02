@@ -150,22 +150,7 @@ export default function Toolbar({
           <item.icon size={16} />
         </button>
       ))}
-      
-      {/* Code block button */}
-      <button
-        onClick={handleCodeBlock}
-        className={`p-2 rounded transition-colors ${
-          isDarkMode
-            ? 'hover:bg-gray-700 text-gray-300'
-            : 'hover:bg-gray-200 text-gray-700'
-        }`}
-        title="Code Block (Ctrl+Shift+`)"
-        disabled={!selectedFile}
-      >
-        <Code size={16} />
-        <span className="text-xs ml-1">{ }</span>
-      </button>
-      
+            
       <div className="ml-auto flex gap-2">
         <button
           onClick={onToggleDarkMode}
