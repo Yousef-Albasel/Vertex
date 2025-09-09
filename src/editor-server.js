@@ -226,6 +226,48 @@ This is a series about ${folderName}.
   }
 });
 
+// Rename folder
+app.put('/api/folders', async (req, res) => {
+  try {
+    const { oldPath, newName } = req.body;
+    
+    if (!oldPath || !newName) {
+      return res.status(400).json({ error: 'Old path and new name are required' });
+    }
+    
+    const fullOldPath = path.join(PROJECT_DIR, oldPath);
+    const pathParts = oldPath.split('/');
+    pathParts[pathParts.length - 1] = newName;
+    const newPath = pathParts.join('/');
+    const fullNewPath = path.join(PROJECT_DIR, newPath);
+    
+    // Security checks
+    if (!fullOldPath.startsWith(PROJECT_DIR) || !fullNewPath.startsWith(PROJECT_DIR)) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    
+    // Check if old folder exists
+    if (!await fs.pathExists(fullOldPath)) {
+      return res.status(404).json({ error: 'Folder not found' });
+    }
+    
+    // Check if new folder already exists
+    if (await fs.pathExists(fullNewPath)) {
+      return res.status(409).json({ error: 'A folder with that name already exists' });
+    }
+    
+    // Rename the folder atomically
+    await fs.move(fullOldPath, fullNewPath);
+    
+    console.log(`📁 Renamed folder: ${oldPath} -> ${newPath}`);
+    
+    res.json({ success: true, newPath });
+  } catch (error) {
+    console.error('Error renaming folder:', error);
+    res.status(500).json({ error: 'Failed to rename folder' });
+  }
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ 
@@ -249,6 +291,7 @@ app.listen(PORT, () => {
   console.log('  POST   /api/file/{filePath}');
   console.log('  DELETE /api/file/{filePath}');
   console.log('  POST   /api/folders');
+  console.log('  PUT    /api/folders');
 });
 
 // Graceful shutdown

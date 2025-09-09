@@ -109,26 +109,25 @@ export default function Sidebar({
     const folderGroups = {};
     const folders = new Set();
 
-    files.forEach(file => {
-      if (!file || !file.path) return;
-      
-      const parts = file.path.split('/');
-      if (parts.length < 2) return; // Skip files not in any folder
-      
-      // Register all folder paths
-      for (let i = 1; i < parts.length; i++) {
-        const folderPath = parts.slice(0, i + 1).join('/');
-        folders.add(folderPath);
-      }
-      
-      const folderPath = parts.slice(0, -1).join('/');
-      
-      if (!folderGroups[folderPath]) {
-        folderGroups[folderPath] = [];
-      }
-      folderGroups[folderPath].push(file);
-    });
-
+  files.forEach(file => {
+    if (!file || !file.path) return;
+    
+    const parts = file.path.split('/');
+    if (parts.length < 2) return; // Skip files not in any folder
+    
+    // Register only actual folder paths (not file paths)
+    for (let i = 1; i < parts.length - 1; i++) {
+      const folderPath = parts.slice(0, i + 1).join('/');
+      folders.add(folderPath);
+    }
+    
+    const folderPath = parts.slice(0, -1).join('/');
+    
+    if (!folderGroups[folderPath]) {
+      folderGroups[folderPath] = [];
+    }
+    folderGroups[folderPath].push(file);
+  });
     // Build tree structure recursively
     const buildNode = (folderPath) => {
       const parts = folderPath.split('/');
@@ -220,6 +219,7 @@ export default function Sidebar({
               {!isRenaming && (
                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
+                    type='button'
                     onClick={() => handleCreateFileInFolder(node.path)}
                     className={`p-1 rounded transition-colors ${
                       isDarkMode
@@ -231,6 +231,7 @@ export default function Sidebar({
                     <Plus size={12} />
                   </button>
                   <button
+                    type='button'
                     onClick={() => handleCreateFolder(node.path)}
                     className={`p-1 rounded transition-colors ${
                       isDarkMode

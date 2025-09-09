@@ -85,44 +85,22 @@ export const fileService = {
     }
   },
 
-  // Rename a folder (client-side implementation)
+  // Rename a folder (server-side implementation)
   async renameFolder(oldPath, newName) {
-    try {
-      // Get all files in the folder
-      const allFiles = await this.loadFiles();
-      const folderFiles = allFiles.filter(file => file.path.startsWith(oldPath + '/'));
-      
-      if (folderFiles.length === 0) {
-        // Empty folder - just create the new folder
-        const pathParts = oldPath.split('/');
-        pathParts[pathParts.length - 1] = newName;
-        const newPath = pathParts.join('/');
-        
-        await this.createFolder(newPath, false);
-        return { success: true, newPath };
-      }
-      
-      // For folders with files, we need to move each file
-      const pathParts = oldPath.split('/');
-      pathParts[pathParts.length - 1] = newName;
-      const newFolderPath = pathParts.join('/');
-      
-      // Create new folder
-      await this.createFolder(newFolderPath, false);
-      
-      // Move all files to the new folder
-      for (const file of folderFiles) {
-        const fileData = await this.loadFileContent(file.path);
-        const newFilePath = file.path.replace(oldPath, newFolderPath);
-        
-        await this.saveFile(newFilePath, fileData.content);
-        await this.deleteFile(file.path);
-      }
-      
-      return { success: true, newPath: newFolderPath };
-    } catch (error) {
-      throw new Error(`Failed to rename folder: ${error.message}`);
+    const response = await fetch(`${API_BASE}/folders`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ oldPath, newName })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || `Failed to rename folder: ${response.statusText}`);
     }
+    
+    return response.json();
   },
 
   // Create a folder
