@@ -1,5 +1,6 @@
 public/*.html
 node_modules
 content/*.md
+content/*
 package-lock.json
 config.json
