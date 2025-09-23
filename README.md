@@ -11,11 +11,11 @@ Vertex is a static site generator originally created to support computer graphic
 </center>
 <h2> Features </h2>
 <ul>
-<li>**Built-in Markdown Editor** with API server  </li>
-<li> **Integrated File Manager** for content and pages  </li>
-<li> **Advanced Formatting & Graphics Engine Support**  </li>
-<li> **Fast Development Server** with live reload  </li>
-<li>**Flexible CLI commands** for building, serving, and editing  
+<li> <strong>Built-in Markdown Editor</strong> with API server  </li>
+<li> <strong>Integrated File Manager</strong> for content and pages  </li>
+<li> <strong>Advanced Formatting & Graphics Engine Support</strong>  </li>
+<li> <strong>Fast Development Server</strong> with live reload  </li>
+<li> <strong>Flexible CLI commands</strong> for building, serving, and editing  
 </ul>
 <h2>ScreenShots </h2>
 
