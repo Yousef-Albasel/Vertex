@@ -46,23 +46,26 @@ Vertex provides multiple commands for managing your site:
 
 2. Start development server
 `vertex serve`
+```
 Options:
 -p, --port <port> → Port to serve on (default: 3000)
 -d, --dir <directory> → Project directory (default: .)
-
-3. Open the editor page
+```
+4. Open the editor page
 `vertex edit`
+```
 Options:
 -f, --file <filename> → Open a specific file in the editor
 -p, --port <port> → API server port (default: 3001)
 -d, --dir <directory> → Project directory (default: .)
-
-4. Create new conent
+```
+6. Create new conent
 vertex create <filename>
-
+```
 Options:
 -p, --port <port> → API server port (default: 3001)
 -d, --dir <directory> → Project directory (default: .)
+```
 Example: 
 ```
 # Create a new blog post
