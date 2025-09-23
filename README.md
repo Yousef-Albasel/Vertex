@@ -9,14 +9,14 @@
 Vertex is a static site generator originally created to support computer graphics demos inside static sites, and to cover the gaps in other static sites generators, providing a flexible and interactive experience while developing your own static site.
 
 </center>
-<features>
-- **Built-in Markdown Editor** with API server  
-- **Integrated File Manager** for content and pages  
-- **Advanced Formatting & Graphics Engine Support**  
-- **Fast Development Server** with live reload  
-- **Flexible CLI commands** for building, serving, and editing  
-</features>
-
+<h2> Features </h2>
+<ul>
+<li>**Built-in Markdown Editor** with API server  </li>
+<li> **Integrated File Manager** for content and pages  </li>
+<li> **Advanced Formatting & Graphics Engine Support**  </li>
+<li> **Fast Development Server** with live reload  </li>
+<li>**Flexible CLI commands** for building, serving, and editing  
+</ul>
 <h2>ScreenShots </h2>
 
 <img width="1599" height="730" alt="image" src="https://github.com/user-attachments/assets/dfa4530d-0a9f-4c22-bd88-e0c2ef9af136" />
