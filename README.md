@@ -1,10 +1,8 @@
-<img width="1599" height="730" alt="image" src="https://github.com/user-attachments/assets/3d6c2de6-6e72-4ebf-84a9-f1cf6589e1dc" /><center>
-<h1> Vertex - Fast and Powerful Static Site Generator </h1>
-<img align="center" src="data/graphics/vifm.svg"/>
+<img width="1920" height="648" alt="a gradient white and purplish background with some icons and modern design on it to act as a background for designing a poster for a github repo, it needs not to have any text one it with a _V_ shaped ab (2)" src="https://github.com/user-attachments/assets/9a160921-49dc-4fd2-936a-07831b39d789" />
 
-[![npm version](https://img.shields.io/npm/v/vertex-ssg.svg?style=flat&color=blue)](https://www.npmjs.com/package/vertex-ssg)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/Yousef-Albasel/vertex/ci.yml?branch=main&style=flat&color=brightgreen)](https://github.com/Yousef-Albasel/vertex/actions)
-[![License](https://img.shields.io/github/license/Yousef-Albasel/vertex?style=flat&color=yellow)](./LICENSE)
+<h1> Vertex - Fast and Powerful Static Site Generator </h1>
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Issues](https://img.shields.io/github/issues/Yousef-Albasel/vertex?style=flat&color=orange)](https://github.com/Yousef-Albasel/vertex/issues)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](https://github.com/Yousef-Albasel/vertex/pulls)
 
@@ -22,7 +20,6 @@ Vertex is a static site generator originally created to support computer graphic
 <h2>ScreenShots </h2>
 
 <img width="1599" height="730" alt="image" src="https://github.com/user-attachments/assets/dfa4530d-0a9f-4c22-bd88-e0c2ef9af136" />
-<img width="1599" height="730" alt="image" src="https://ibb.co/jZ9BYWgN" />
 
 <h2>Installation</h2>
 
