@@ -18,6 +18,7 @@ import {
   Moon,
   Sun,
   Sidebar,
+  Upload,
   SidebarOpen
 } from 'lucide-react';
 
@@ -35,6 +36,45 @@ export default function Toolbar({
   selectedFile,
   hasModifiedFiles
 }) {
+  
+  const handleImageUpload = () => {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.multiple = true;
+  
+  input.onchange = async (e) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      
+      try {
+        const formData = new FormData();
+        formData.append('image', file);
+
+        const response = await fetch('http://localhost:3001/api/upload-image', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) throw new Error('Upload failed');
+
+        const data = await response.json();
+        const markdownImage = `\n![${file.name}](${data.path})\n`;
+        onInsert(markdownImage);
+
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        alert(`Failed to upload ${file.name}`);
+      }
+    }
+  };
+  
+  input.click();
+};
+
   const toolbarItems = [
     { 
       icon: Heading1, 
@@ -96,6 +136,12 @@ export default function Toolbar({
       tooltip: 'Image',
       shortcut: null
     },
+    {
+    icon: Image,
+    action: handleImageUpload,
+    tooltip: 'Upload Image (or paste from clipboard)',
+    shortcut: null
+    },
     { 
       icon: Code, 
       action: () => onFormatText('code'), 
@@ -113,7 +159,7 @@ export default function Toolbar({
   const handleCodeBlock = () => {
     onFormatText('codeblock');
   };
-
+  
   return (
     <div className={`flex items-center gap-1 p-2 border-b flex-wrap ${
       isDarkMode 

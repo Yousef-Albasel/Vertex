@@ -300,4 +300,65 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
+
+// Add this to editor-server.js after the existing endpoints
+
+const multer = require('multer');
+const crypto = require('crypto');
+
+// Configure multer for image uploads
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.'));
+    }
+  }
+});
+
+// Upload image endpoint
+app.post('/api/upload-image', upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No image file provided' });
+    }
+
+    // Generate unique filename
+    const timestamp = Date.now();
+    const randomString = crypto.randomBytes(8).toString('hex');
+    const ext = path.extname(req.file.originalname) || '.png';
+    const filename = `paste-${timestamp}-${randomString}${ext}`;
+
+    // Ensure images directory exists
+    const imagesDir = path.join(PROJECT_DIR, 'static', 'images', 'posts');
+    await fs.ensureDir(imagesDir);
+
+    // Save the file
+    const imagePath = path.join(imagesDir, filename);
+    await fs.writeFile(imagePath, req.file.buffer);
+
+    // Return the relative path that should be used in markdown
+    const markdownPath = `/images/posts/${filename}`;
+
+    console.log(`📸 Uploaded image: ${filename}`);
+
+    res.json({
+      success: true,
+      filename: filename,
+      path: markdownPath,
+      size: req.file.size
+    });
+
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    res.status(500).json({ error: 'Failed to upload image' });
+  }
+});
+
+
 module.exports = app;

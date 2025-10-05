@@ -11,6 +11,20 @@ const md = MarkdownIt({
   typographer: true
 })
 
+// Get the theme directory based on config
+function getThemeDir(projectDir, themeName) {
+    const themesDir = path.join(projectDir, 'themes');
+    const themeDir = path.join(themesDir, themeName);
+    
+    // Fallback to 'layout' directory if theme doesn't exist (backward compatibility)
+    if (!fs.existsSync(themeDir)) {
+        console.log(`Theme '${themeName}' not found in themes/, using layout/ directory`);
+        return path.join(projectDir, 'layout');
+    }
+    
+    return themeDir;
+}
+
 async function build(projectDir = '.'){
     console.log('Starting Build Process...');
     try{
@@ -18,7 +32,12 @@ async function build(projectDir = '.'){
         const config = await loadConfig(projectDir);
         console.log('Config loaded successfully');
 
-        const env = setupTemplating(projectDir);
+        // Get theme directory
+        const themeName = config.theme || 'default';
+        const themeDir = getThemeDir(projectDir, themeName);
+        console.log(`Using theme: ${themeName} from ${path.relative(projectDir, themeDir)}`);
+
+        const env = setupTemplating(themeDir);
         console.log('Templates configured successfully');
         
         const outputDir = path.join(projectDir, 'public');
@@ -53,7 +72,7 @@ async function build(projectDir = '.'){
         await generatePostsListingPage(posts, series, env, config, outputDir);
         console.log('Posts listing page generated successfully');
         
-        await generateAboutMePage(projectDir, config, outputDir);
+        await generateAboutMePage(themeDir, config, outputDir);
         
         // Generate category pages
         await generateCategoryPages(posts, env, config, outputDir);
@@ -81,7 +100,8 @@ async function loadConfig(projectDir) {
             description: 'Welcome to my site',
             email: 'hello@example.com',
             avatar: '/images/avatar.jpg',
-            baseURL: 'http://localhost:3000'
+            baseURL: 'http://localhost:3000',
+            theme: 'default'
         };
 
         await fs.writeFile(configPath, JSON.stringify(default_config, null, 2));
@@ -89,8 +109,7 @@ async function loadConfig(projectDir) {
     }
 }
 
-function setupTemplating(projectDir){
-    const templateDir = path.join(projectDir,'layout');
+function setupTemplating(templateDir){
     const env = nunjucks.configure(templateDir,{
         autoescape : true,
         throwOnUndefined : false
@@ -389,8 +408,8 @@ async function generatePostsListingPage(posts, series, env, config, outputDir) {
     }
 }
 
-async function generateAboutMePage(projectDir, siteConfig, outputDir) {
-    const nunjucksEnv = setupTemplating(projectDir);
+async function generateAboutMePage(themeDir, siteConfig, outputDir) {
+    const nunjucksEnv = setupTemplating(themeDir);
     const html = nunjucksEnv.render('aboutme.html', { site: siteConfig });
     await fs.outputFile(path.join(outputDir, 'aboutme.html'), html);
 }

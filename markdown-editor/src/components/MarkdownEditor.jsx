@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 
 export default function MarkdownEditor({ value, onChange, onInsert, isDarkMode }) {
   const textareaRef = useRef(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const handleInsert = (text) => {
     const textarea = textareaRef.current;
@@ -139,7 +140,72 @@ export default function MarkdownEditor({ value, onChange, onInsert, isDarkMode }
       textarea.focus();
     }, 0);
   };
+  const handlePaste = async (e) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
 
+    // Check if any pasted item is an image
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      
+      if (item.type.indexOf('image') !== -1) {
+        e.preventDefault(); // Prevent default paste behavior
+        
+        const file = item.getAsFile();
+        if (!file) continue;
+
+        await uploadImage(file);
+        return;
+      }
+    }
+  };
+  const uploadImage = async (file) => {
+    try {
+      setUploadingImage(true);
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await fetch('http://localhost:3001/api/upload-image', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload image');
+      }
+
+      const data = await response.json();
+      
+      // Insert markdown image syntax at cursor position
+      const markdownImage = `\n![Image](${data.path})\n`;
+      handleInsert(markdownImage);
+
+      console.log('Image uploaded successfully:', data.filename);
+
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Failed to upload image. Make sure the server is running.');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+ const handleDrop = async (e) => {
+    e.preventDefault();
+    
+    const files = e.dataTransfer?.files;
+    if (!files || files.length === 0) return;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (file.type.startsWith('image/')) {
+        await uploadImage(file);
+      }
+    }
+  }; 
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
   const handleIndentList = (isIndent) => {
     const textarea = textareaRef.current;
     if (!textarea) return;
@@ -313,28 +379,38 @@ export default function MarkdownEditor({ value, onChange, onInsert, isDarkMode }
     }
   }, [value, handleInsert, handleFormatText]);
 
-  return (
-    <textarea
-      ref={textareaRef}
-      className={`w-full h-full p-4 border-none outline-none font-mono text-sm resize-none ${
-        isDarkMode 
-          ? 'bg-gray-900 text-gray-100 placeholder-gray-400' 
-          : 'bg-white text-gray-900 placeholder-gray-500'
-      }`}
-      style={{
-        wordWrap: 'break-word',
-        whiteSpace: 'pre-wrap',
-        overflowWrap: 'break-word',
-        overflowY: 'auto',
-        overflowX: 'hidden',
-        minHeight: '100%',
-        boxSizing: 'border-box',
-        tabSize: 4
-      }}
-      value={value || ''}
-      onChange={(e) => onChange(e.target.value)}
-      onKeyDown={handleKeyDown}
-      placeholder="Start typing your markdown here..."
-    />
+    return (
+    <div className="relative h-full">
+      {uploadingImage && (
+        <div className="absolute top-2 right-2 z-10 bg-blue-500 text-white px-3 py-1 rounded text-sm">
+          Uploading image...
+        </div>
+      )}
+      <textarea
+        ref={textareaRef}
+        className={`w-full h-full p-4 border-none outline-none font-mono text-sm resize-none ${
+          isDarkMode 
+            ? 'bg-gray-900 text-gray-100 placeholder-gray-400' 
+            : 'bg-white text-gray-900 placeholder-gray-500'
+        }`}
+        style={{
+          wordWrap: 'break-word',
+          whiteSpace: 'pre-wrap',
+          overflowWrap: 'break-word',
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          minHeight: '100%',
+          boxSizing: 'border-box',
+          tabSize: 4
+        }}
+        value={value || ''}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onPaste={handlePaste}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        placeholder="Start typing your markdown here..."
+      />
+    </div>
   );
 }

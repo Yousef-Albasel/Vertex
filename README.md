@@ -85,6 +85,16 @@ vertex edit
 
 # Create new content
 vertex create hello-world
+
+# Create new theme
+vertex theme create my-awesome-theme
+
+# Set Theme
+vertex theme set my-awesome-theme
+
+# view all themes
+vertex theme list
+
 ```
 
 The editor has all sorts of functionality for creating files, folders renaming them and deleting.
@@ -112,7 +122,7 @@ A `config.js` file is provided when you first build your page, and it has defaul
   "email": "you@example.com",         // Contact email
   "avatar": "/images/avatar.jpeg",    // Path to profile/avatar image
   "baseURL": "http://localhost:3000", // Base URL of the site (change in production)
-
+  "theme": "default"                  // Current Theme
   // Navigation links (appear in menus or navbars)
   "links": {
     "About Me": { 

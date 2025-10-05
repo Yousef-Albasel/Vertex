@@ -38,13 +38,150 @@ program
     .option('-d, --dir <directory>', 'Project directory', '.')
     .action(async (options) => {
         try {
-            console.log('Starting development server... 🚀 ');
+            console.log('Starting development server... 🚀');
             await serve(options.dir, parseInt(options.port));
         } catch (error) {
             console.error('Server failed:', error.message);
             process.exit(1);
         }
     });
+
+// Theme management commands
+program
+    .command('theme')
+    .description('Manage themes')
+    .addCommand(
+        new Command('list')
+            .description('List all available themes')
+            .option('-d, --dir <directory>', 'Project directory', '.')
+            .action(async (options) => {
+                try {
+                    const projectDir = path.resolve(options.dir);
+                    const themesDir = path.join(projectDir, 'themes');
+                    const configPath = path.join(projectDir, 'config.json');
+                    
+                    let currentTheme = 'default';
+                    if (await fs.pathExists(configPath)) {
+                        const config = await fs.readJSON(configPath);
+                        currentTheme = config.theme || 'default';
+                    }
+                    
+                    console.log('\n📁 Available Themes:\n');
+                    
+                    if (await fs.pathExists(themesDir)) {
+                        const themes = await fs.readdir(themesDir, { withFileTypes: true });
+                        const themeFolders = themes.filter(t => t.isDirectory());
+                        
+                        if (themeFolders.length === 0) {
+                            console.log('   No themes found in themes/ directory');
+                        } else {
+                            for (const theme of themeFolders) {
+                                const isCurrent = theme.name === currentTheme;
+                                const marker = isCurrent ? '✓' : ' ';
+                                console.log(`   [${marker}] ${theme.name}${isCurrent ? ' (active)' : ''}`);
+                            }
+                        }
+                    } else {
+                        console.log('   No themes directory found');
+                    }
+                    
+                    // Check for legacy layout directory
+                    const layoutDir = path.join(projectDir, 'layout');
+                    if (await fs.pathExists(layoutDir)) {
+                        const isActive = currentTheme === 'default' && !await fs.pathExists(path.join(themesDir, 'default'));
+                        console.log(`\n   Legacy layout/ directory${isActive ? ' (active)' : ''}`);
+                    }
+                    
+                    console.log('\n');
+                } catch (error) {
+                    console.error('Failed to list themes:', error.message);
+                    process.exit(1);
+                }
+            })
+    )
+    .addCommand(
+        new Command('set')
+            .description('Set the active theme')
+            .argument('<theme>', 'Theme name to activate')
+            .option('-d, --dir <directory>', 'Project directory', '.')
+            .action(async (themeName, options) => {
+                try {
+                    const projectDir = path.resolve(options.dir);
+                    const themesDir = path.join(projectDir, 'themes');
+                    const themeDir = path.join(themesDir, themeName);
+                    const configPath = path.join(projectDir, 'config.json');
+                    
+                    // Check if theme exists
+                    if (!await fs.pathExists(themeDir)) {
+                        console.error(`❌ Theme '${themeName}' not found in themes/ directory`);
+                        process.exit(1);
+                    }
+                    
+                    // Update config
+                    let config = {};
+                    if (await fs.pathExists(configPath)) {
+                        config = await fs.readJSON(configPath);
+                    }
+                    
+                    config.theme = themeName;
+                    await fs.writeJSON(configPath, config, { spaces: 2 });
+                    
+                    console.log(`✅ Active theme set to: ${themeName}`);
+                    console.log('   Run "vertex build" to apply the theme');
+                    
+                } catch (error) {
+                    console.error('Failed to set theme:', error.message);
+                    process.exit(1);
+                }
+            })
+    )
+    .addCommand(
+        new Command('create')
+            .description('Create a new theme from the current layout')
+            .argument('<name>', 'Name for the new theme')
+            .option('-d, --dir <directory>', 'Project directory', '.')
+            .option('-f, --from <source>', 'Source theme to copy from', 'layout')
+            .action(async (themeName, options) => {
+                try {
+                    const projectDir = path.resolve(options.dir);
+                    const themesDir = path.join(projectDir, 'themes');
+                    const newThemeDir = path.join(themesDir, themeName);
+                    
+                    // Check if theme already exists
+                    if (await fs.pathExists(newThemeDir)) {
+                        console.error(`❌ Theme '${themeName}' already exists`);
+                        process.exit(1);
+                    }
+                    
+                    // Determine source directory
+                    let sourceDir;
+                    if (options.from === 'layout') {
+                        sourceDir = path.join(projectDir, 'layout');
+                    } else {
+                        sourceDir = path.join(themesDir, options.from);
+                    }
+                    
+                    if (!await fs.pathExists(sourceDir)) {
+                        console.error(`❌ Source '${options.from}' not found`);
+                        process.exit(1);
+                    }
+                    
+                    // Create themes directory if it doesn't exist
+                    await fs.ensureDir(themesDir);
+                    
+                    // Copy the source to new theme
+                    await fs.copy(sourceDir, newThemeDir);
+                    
+                    console.log(`✅ Created new theme: ${themeName}`);
+                    console.log(`   Location: themes/${themeName}/`);
+                    console.log(`   Set as active: vertex theme set ${themeName}`);
+                    
+                } catch (error) {
+                    console.error('Failed to create theme:', error.message);
+                    process.exit(1);
+                }
+            })
+    );
 
 // Editor command
 program
@@ -84,9 +221,7 @@ program
             setTimeout(async () => {
                 let url = 'http://localhost:5173';
 
-                // If a specific file is requested, add it as a URL parameter
                 if (options.file) {
-                    // Determine if it's in content or pages directory
                     const contentPath = path.join(projectDir, 'content', options.file);
                     const pagesPath = path.join(projectDir, 'pages', options.file);
                     
@@ -111,7 +246,7 @@ program
             
             // Handle shutdown
             const shutdown = () => {
-                console.log('\n📴 Shutting down Vertex Editor...');
+                console.log('\nShutting down Vertex Editor...');
                 apiServer.kill();
                 editorServer.kill();
                 process.exit(0);
@@ -187,9 +322,9 @@ Start writing your post content here...
             await fs.ensureDir(path.dirname(filePath));
             if (!await fs.pathExists(filePath)) {
                 await fs.writeFile(filePath, initialContent);
-                console.log(`📝 Created new ${options.type}: ${targetDir}/${filename}`);
+                console.log(`Created new ${options.type}: ${targetDir}/${filename}`);
             } else {
-                console.log(`📄 Opening existing ${options.type}: ${targetDir}/${filename}`);
+                console.log(`Opening existing ${options.type}: ${targetDir}/${filename}`);
             }
             
             const editOptions = {
