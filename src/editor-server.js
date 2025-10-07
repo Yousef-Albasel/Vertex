@@ -1,21 +1,25 @@
-#!/usr/bin/env node
 const express = require('express');
 const fs = require('fs-extra');
 const path = require('path');
 const matter = require('gray-matter');
 const cors = require('cors');
+const multer = require('multer');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Enable CORS for the React app
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173'],
+  origin: ['http://localhost:5173', 'http://localhost:3001', 'http://127.0.0.1:5173'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type']
 }));
 
 app.use(express.json());
+
+const IMAGES_DIR = path.join('F:', 'Dev', 'Vertex', 'static', 'images');
+app.use('/images', express.static(IMAGES_DIR));
+console.log(`Serving images from: ${IMAGES_DIR}`);
 
 // Get the project directory (where the server is running from)
 const PROJECT_DIR = process.cwd();
@@ -24,10 +28,95 @@ const CONTENT_DIR = path.join(PROJECT_DIR, 'content');
 // Ensure content directory exists
 async function ensureDirectories() {
   await fs.ensureDir(CONTENT_DIR);
+  await fs.ensureDir(IMAGES_DIR);
 }
 
 // Initialize directories on startup
 ensureDirectories();
+
+// Configure multer for image uploads
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only JPEG, PNG, GIF, WebP, and BMP are allowed.'));
+    }
+  }
+});
+
+// Upload image endpoint - handles clipboard paste and file uploads
+app.post('/api/upload-image', upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No image file provided' });
+    }
+
+    // Generate unique filename
+    const timestamp = Date.now();
+    const randomString = crypto.randomBytes(8).toString('hex');
+    
+    // Get file extension from mimetype
+    let ext = path.extname(req.file.originalname);
+    if (!ext) {
+      const mimeToExt = {
+        'image/jpeg': '.jpg',
+        'image/png': '.png',
+        'image/gif': '.gif',
+        'image/webp': '.webp',
+        'image/bmp': '.bmp'
+      };
+      ext = mimeToExt[req.file.mimetype] || '.png';
+    }
+    
+    const filename = `paste-${timestamp}-${randomString}${ext}`;
+
+    const imagePath = path.join(IMAGES_DIR, filename);
+    await fs.writeFile(imagePath, req.file.buffer);
+    const markdownPath = `http://localhost:3001/images/${filename}`;
+
+    console.log(`📸 Uploaded image: ${filename} (${(req.file.size / 1024).toFixed(2)} KB)`);
+
+    res.json({
+      success: true,
+      filename: filename,
+      path: markdownPath,
+      size: req.file.size,
+      fullPath: imagePath
+    });
+
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    res.status(500).json({ error: `Failed to upload image: ${error.message}` });
+  }
+});
+
+// List all uploaded images
+app.get('/api/images', async (req, res) => {
+  try {
+    if (!await fs.pathExists(IMAGES_DIR)) {
+      return res.json({ images: [] });
+    }
+
+    const files = await fs.readdir(IMAGES_DIR);
+    const images = files
+      .filter(file => /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(file))
+      .map(file => ({
+        filename: file,
+        path: `/images/${file}`,
+        fullPath: path.join(IMAGES_DIR, file)
+      }));
+
+    res.json({ images });
+  } catch (error) {
+    console.error('Error listing images:', error);
+    res.status(500).json({ error: 'Failed to list images' });
+  }
+});
 
 // Recursive function to get all markdown files from directories
 async function getMarkdownFilesRecursively(dirPath, basePath = '') {
@@ -44,7 +133,6 @@ async function getMarkdownFilesRecursively(dirPath, basePath = '') {
     const relativePath = basePath ? `${basePath}/${item.name}` : item.name;
     
     if (item.isDirectory()) {
-      // Recursively get files from subdirectories
       const subFiles = await getMarkdownFilesRecursively(itemPath, relativePath);
       files.push(...subFiles);
     } else if (item.name.endsWith('.md')) {
@@ -67,12 +155,8 @@ async function getMarkdownFilesRecursively(dirPath, basePath = '') {
 app.get('/api/files', async (req, res) => {
   try {
     const files = await getMarkdownFilesRecursively(CONTENT_DIR, 'content');
-    
-    // Sort by last modified (newest first)
     files.sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified));
-    
-    console.log(`📁 Found ${files.length} files:`, files.map(f => f.path));
-    
+    console.log(`📝 Found ${files.length} files:`, files.map(f => f.path));
     res.json(files);
   } catch (error) {
     console.error('Error listing files:', error);
@@ -80,19 +164,12 @@ app.get('/api/files', async (req, res) => {
   }
 });
 
-// Middleware to handle file operations without using wildcards
+// Middleware to handle file operations
 app.use('/api/file', (req, res, next) => {
-  // Extract the file path from the URL after /api/file/
   const urlPath = req.url;
-  
-  // Remove leading slash if present
   const filePath = urlPath.startsWith('/') ? urlPath.substring(1) : urlPath;
-  
-  // Store the file path in the request object
   req.filePath = decodeURIComponent(filePath);
-  
   console.log(`File operation: ${req.method} ${req.filePath}`);
-  
   next();
 });
 
@@ -102,13 +179,11 @@ app.use('/api/file', async (req, res) => {
     const filePath = req.filePath;
     const fullPath = path.join(PROJECT_DIR, filePath);
     
-    // Security check: ensure the path is within our project directory
     if (!fullPath.startsWith(PROJECT_DIR)) {
       return res.status(403).json({ error: 'Access denied' });
     }
     
     if (req.method === 'GET') {
-      // Get file content
       if (!await fs.pathExists(fullPath)) {
         return res.status(404).json({ error: 'File not found' });
       }
@@ -116,7 +191,6 @@ app.use('/api/file', async (req, res) => {
       const content = await fs.readFile(fullPath, 'utf-8');
       const stats = await fs.stat(fullPath);
       
-      // Parse frontmatter if it exists
       let frontMatter = {};
       let markdownContent = content;
       try {
@@ -136,18 +210,11 @@ app.use('/api/file', async (req, res) => {
       });
       
     } else if (req.method === 'POST') {
-      // Save/create file
       const { content } = req.body;
-      
-      // Ensure the directory exists
       await fs.ensureDir(path.dirname(fullPath));
-      
-      // Write the file
       await fs.writeFile(fullPath, content || '', 'utf-8');
-      
       const stats = await fs.stat(fullPath);
-      
-      console.log(`💾 Saved: ${filePath}`);
+      console.log(`Saved: ${filePath}`);
       
       res.json({ 
         success: true, 
@@ -156,15 +223,11 @@ app.use('/api/file', async (req, res) => {
       });
       
     } else if (req.method === 'DELETE') {
-      // Delete file
       if (!await fs.pathExists(fullPath)) {
         return res.status(404).json({ error: 'File not found' });
       }
-      
       await fs.unlink(fullPath);
-      
-      console.log(`🗑️ Deleted: ${filePath}`);
-      
+      console.log(`Deleted: ${filePath}`);
       res.json({ success: true });
       
     } else {
@@ -188,15 +251,12 @@ app.post('/api/folders', async (req, res) => {
     
     const fullPath = path.join(PROJECT_DIR, folderPath);
     
-    // Security check
     if (!fullPath.startsWith(PROJECT_DIR)) {
       return res.status(403).json({ error: 'Access denied' });
     }
     
-    // Create the folder
     await fs.ensureDir(fullPath);
     
-    // Create _index.md if requested (for series)
     if (createIndex) {
       const indexPath = path.join(fullPath, '_index.md');
       const folderName = path.basename(folderPath);
@@ -214,9 +274,9 @@ This is a series about ${folderName}.
 `;
       
       await fs.writeFile(indexPath, indexContent);
-      console.log(`📁 Created series folder: ${folderPath} with _index.md`);
+      console.log(`Created series folder: ${folderPath} with _index.md`);
     } else {
-      console.log(`📁 Created folder: ${folderPath}`);
+      console.log(`Created folder: ${folderPath}`);
     }
     
     res.json({ success: true });
@@ -241,26 +301,20 @@ app.put('/api/folders', async (req, res) => {
     const newPath = pathParts.join('/');
     const fullNewPath = path.join(PROJECT_DIR, newPath);
     
-    // Security checks
     if (!fullOldPath.startsWith(PROJECT_DIR) || !fullNewPath.startsWith(PROJECT_DIR)) {
       return res.status(403).json({ error: 'Access denied' });
     }
     
-    // Check if old folder exists
     if (!await fs.pathExists(fullOldPath)) {
       return res.status(404).json({ error: 'Folder not found' });
     }
     
-    // Check if new folder already exists
     if (await fs.pathExists(fullNewPath)) {
       return res.status(409).json({ error: 'A folder with that name already exists' });
     }
     
-    // Rename the folder atomically
     await fs.move(fullOldPath, fullNewPath);
-    
-    console.log(`📁 Renamed folder: ${oldPath} -> ${newPath}`);
-    
+    console.log(`Renamed folder: ${oldPath} -> ${newPath}`);
     res.json({ success: true, newPath });
   } catch (error) {
     console.error('Error renaming folder:', error);
@@ -274,91 +328,35 @@ app.get('/api/health', (req, res) => {
     status: 'ok', 
     projectDir: PROJECT_DIR,
     contentDir: CONTENT_DIR,
+    imagesDir: IMAGES_DIR,
     timestamp: new Date().toISOString()
   });
 });
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Vertex Editor API Server running at http://localhost:${PORT}`);
-  console.log(`📂 Project directory: ${PROJECT_DIR}`);
-  console.log(`📂 Content directory: ${CONTENT_DIR}`);
+  console.log(`Vertex Editor API Server running at http://localhost:${PORT}`);
+  console.log( `Project directory: ${PROJECT_DIR}`);
+  console.log(`Content directory: ${CONTENT_DIR}`);
+  console.log(`Images directory: ${IMAGES_DIR}`);
   console.log('');
   console.log('Available endpoints:');
   console.log('  GET    /api/health');
   console.log('  GET    /api/files');
+  console.log('  GET    /api/images');
   console.log('  GET    /api/file/{filePath}');
   console.log('  POST   /api/file/{filePath}');
+  console.log('  POST   /api/upload-image');
   console.log('  DELETE /api/file/{filePath}');
   console.log('  POST   /api/folders');
   console.log('  PUT    /api/folders');
+  console.log('  GET    /images/{filename} (static)');
 });
 
 // Graceful shutdown
 process.on('SIGINT', () => {
-  console.log('\n🔴 Shutting down Vertex Editor API Server...');
+  console.log('\nShutting down Vertex Editor API Server...');
   process.exit(0);
 });
-
-
-// Add this to editor-server.js after the existing endpoints
-
-const multer = require('multer');
-const crypto = require('crypto');
-
-// Configure multer for image uploads
-const storage = multer.memoryStorage();
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.'));
-    }
-  }
-});
-
-// Upload image endpoint
-app.post('/api/upload-image', upload.single('image'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No image file provided' });
-    }
-
-    // Generate unique filename
-    const timestamp = Date.now();
-    const randomString = crypto.randomBytes(8).toString('hex');
-    const ext = path.extname(req.file.originalname) || '.png';
-    const filename = `paste-${timestamp}-${randomString}${ext}`;
-
-    // Ensure images directory exists
-    const imagesDir = path.join(PROJECT_DIR, 'static', 'images', 'posts');
-    await fs.ensureDir(imagesDir);
-
-    // Save the file
-    const imagePath = path.join(imagesDir, filename);
-    await fs.writeFile(imagePath, req.file.buffer);
-
-    // Return the relative path that should be used in markdown
-    const markdownPath = `/images/posts/${filename}`;
-
-    console.log(`📸 Uploaded image: ${filename}`);
-
-    res.json({
-      success: true,
-      filename: filename,
-      path: markdownPath,
-      size: req.file.size
-    });
-
-  } catch (error) {
-    console.error('Error uploading image:', error);
-    res.status(500).json({ error: 'Failed to upload image' });
-  }
-});
-
 
 module.exports = app;

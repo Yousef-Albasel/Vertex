@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - {{ site.name }}</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    {% include "_navbar.html" %}
+
+    <div class="container">
+        <div class="category-page">
+            <header class="page-header">
+                <nav class="breadcrumb">
+                    <a href="/categories.html">Categories</a> / {{ category }}
+                </nav>
+                <h1>{{ category }}</h1>
+                <p class="page-description">{{ posts.length }} {% if posts.length == 1 %}post{% else %}posts{% endif %} in this category</p>
+            </header>
+
+            <div class="posts-grid">
+                {% for post in posts %}
+                <article class="post-card">
+                    {% if post.image %}
+                    <img src="{{ post.image }}" alt="{{ post.title }}" class="post-card-image">
+                    {% endif %}
+                    <div class="post-card-content">
+                        <h2><a href="{{ post.url }}">{{ post.title }}</a></h2>
+                        <p class="post-description">{{ post.description }}</p>
+                        <time class="post-date">{{ post.date }}</time>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+
+            <footer class="page-footer">
+                <a href="/categories.html" class="back-link"><i class="fas fa-arrow-left"></i> All Categories</a>
+            </footer>
+        </div>
+    </div>
+
+    <script src="/js/theme.js"></script>
+</body>
+</html>

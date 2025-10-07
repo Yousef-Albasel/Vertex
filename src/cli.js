@@ -34,7 +34,7 @@ program
 program
     .command('serve')
     .description('Start development server')
-    .option('-p, --port <port>', 'Port to serve on', '3000')
+    .option('-p, --port <port>', 'Port to serve on', '3001')
     .option('-d, --dir <directory>', 'Project directory', '.')
     .action(async (options) => {
         try {

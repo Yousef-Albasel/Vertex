@@ -25,11 +25,15 @@ function getThemeDir(projectDir, themeName) {
     return themeDir;
 }
 
-async function build(projectDir = '.'){
+async function build(projectDir = '.',opetions={}){
+    const {port = 3000} = opetions;
+
     console.log('Starting Build Process...');
     try{
         // Load page config
         const config = await loadConfig(projectDir);
+        config.baseURL = config.baseURL || `http://localhost:${port}`;
+
         console.log('Config loaded successfully');
 
         // Get theme directory
@@ -37,7 +41,7 @@ async function build(projectDir = '.'){
         const themeDir = getThemeDir(projectDir, themeName);
         console.log(`Using theme: ${themeName} from ${path.relative(projectDir, themeDir)}`);
 
-        const env = setupTemplating(themeDir);
+        const env = setupTemplating(path.join(themeDir, 'templates'));
         console.log('Templates configured successfully');
         
         const outputDir = path.join(projectDir, 'public');
@@ -46,6 +50,10 @@ async function build(projectDir = '.'){
         
         await copyStaticAssets(projectDir, outputDir);
         console.log('Static assets copied successfully');
+        
+        // Copy theme CSS files
+        await copyThemeAssets(themeDir, outputDir);
+        console.log('Theme assets copied successfully');
         
         // Process both flat posts and series
         const { posts, series } = await processMarkdownFiles(projectDir);
@@ -72,7 +80,7 @@ async function build(projectDir = '.'){
         await generatePostsListingPage(posts, series, env, config, outputDir);
         console.log('Posts listing page generated successfully');
         
-        await generateAboutMePage(themeDir, config, outputDir);
+        await generateAboutMePage(path.join(themeDir, 'templates'), config, outputDir);
         
         // Generate category pages
         await generateCategoryPages(posts, env, config, outputDir);
@@ -100,7 +108,7 @@ async function loadConfig(projectDir) {
             description: 'Welcome to my site',
             email: 'hello@example.com',
             avatar: '/images/avatar.jpg',
-            baseURL: 'http://localhost:3000',
+            baseURL: 'http://localhost:3001',
             theme: 'default'
         };
 
@@ -121,6 +129,22 @@ async function copyStaticAssets(projectDir,outputDir){
     const staticDir = path.join(projectDir,'static');
     if (await fs.pathExists(staticDir)){
         await fs.copy(staticDir,outputDir);
+    }
+}
+
+// New function to copy theme assets (CSS, JS, etc.)
+async function copyThemeAssets(themeDir, outputDir) {
+    const themeStaticDir = path.join(themeDir, 'static');
+    
+    if (await fs.pathExists(themeStaticDir)) {
+        // Copy the entire static directory from theme
+        await fs.copy(themeStaticDir, outputDir, {
+            overwrite: true,
+            errorOnExist: false
+        });
+        console.log('Theme static assets copied from theme/static/');
+    } else {
+        console.log('No static directory found in theme, skipping theme assets');
     }
 }
 

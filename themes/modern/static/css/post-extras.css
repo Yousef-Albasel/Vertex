@@ -1,0 +1,113 @@
+/* Series Banner for Posts */
+.series-banner {
+    background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%);
+    color: white;
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 48px;
+}
+
+.series-banner-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+    margin-bottom: 12px;
+}
+
+.series-banner-content i {
+    font-size: 18px;
+}
+
+.series-banner-content a {
+    color: white;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.series-progress-bar {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.series-progress-fill {
+    height: 100%;
+    background: white;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+/* Series Navigation */
+.series-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    margin-top: 60px;
+    padding-top: 40px;
+    border-top: 2px solid var(--border);
+}
+
+.series-nav-link {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    flex: 1;
+    max-width: 48%;
+    transition: all 0.2s;
+}
+
+.series-nav-link:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.series-nav-link.next {
+    text-align: right;
+}
+
+.nav-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.nav-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.4;
+}
+
+.nav-spacer {
+    flex: 1;
+    max-width: 48%;
+}
+
+@media (max-width: 768px) {
+    .series-nav {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .series-nav-link {
+        max-width: 100%;
+    }
+
+    .series-nav-link.next {
+        text-align: left;
+    }
+
+    .nav-spacer {
+        display: none;
+    }
+}

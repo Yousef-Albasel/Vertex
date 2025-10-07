@@ -3,12 +3,12 @@ const path = require('path');
 const chokidar = require('chokidar');
 const build = require('./build');
 
-async function serve(projectDir = '.', port = 3000) {
+async function serve(projectDir = '.', port = 3001) {
     // Make sure publicDir is absolute
     const publicDir = path.resolve(projectDir, 'public');
     
     console.log('Building site for first time...');
-    await build(projectDir);
+    await build(projectDir, {port});
     const app = express();
     app.use(express.static(publicDir));
     
@@ -127,7 +127,7 @@ async function serve(projectDir = '.', port = 3000) {
             try {
                 console.log(`File ${eventType}: ${path.relative(projectDir, filePath)}`);
                 console.log('Rebuilding...');
-                await build(projectDir);
+                await build(projectDir, { port });
                 console.log('Rebuild complete!');
             } catch (error) {
                 console.error('Rebuild failed:', error.message);

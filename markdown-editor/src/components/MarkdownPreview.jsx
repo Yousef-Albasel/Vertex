@@ -130,13 +130,20 @@ export default function PreviewPane({ markdown, isDarkMode }) {
           ),
 
           // Images
-          img: ({ src, alt }) => (
-            <img
-              src={src}
-              alt={alt}
-              className="max-w-full h-auto my-2 rounded block"
-            />
-          ),
+          img: ({ src, alt }) => {
+            const finalSrc = src?.startsWith('http')
+              ? src
+              : `http://localhost:3001${src}`;
+
+            return (
+              <img
+                src={finalSrc}
+                alt={alt}
+                className="max-w-full h-auto my-2 rounded block"
+              />
+            );
+          },
+
 
           // Lists
           ul: ({ children }) => (

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ site.name }}</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    {% include "_navbar.html" %}
+
+    <div class="container">
+        <section class="hero">
+            <img src="{{ site.avatar }}" alt="{{ site.name }}" class="hero-image">
+            <h1>{{ site.name }}</h1>
+            <p>{{ site.description }}</p>
+            {% if site.social %}
+            <div class="hero-socials">
+                {% for s in site.social %}
+                <a href="{{ s.url }}" target="_blank" rel="noopener" aria-label="{{ s.icon }}">
+                    <i class="{{ s.icon }}"></i>
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </section>
+
+        <div class="main-section">
+            {% if links and links.length > 0 %}
+            <section class="quick-links">
+                <h4>Quick Links</h4>
+                <ul>
+                    {% for link in links %}
+                    <li>
+                        <a href="{{ link.href }}">
+                            {% if link.icon %}<i class="{{ link.icon }}"></i>{% endif %}
+                            {{ link.label }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </section>
+            {% endif %}
+
+            <section class="latest-posts">
+                <h2>Latest Posts</h2>
+                <div class="post-cards">
+                    {% for post in latestPosts %}
+                    <article class="post-card">
+                        {% if post.image %}
+                        <img src="{{ post.image }}" alt="{{ post.title }}">
+                        {% endif %}
+                        {% if post.category %}
+                        <span class="post-category">{{ post.category }}</span>
+                        {% endif %}
+                        <h3><a href="{{ post.url }}">{{ post.title }}</a></h3>
+                        <p>{{ post.description }}</p>
+                        <a href="{{ post.url }}">Read More</a>
+                    </article>
+                    {% endfor %}
+                </div>
+            </section>
+
+            {% if posts.length > latestPosts.length %}
+            <section class="all-posts">
+                <h2>All Posts</h2>
+                <div class="posts-list">
+                    {% for post in posts %}
+                    <article class="post-item">
+                        <h3><a href="{{ post.url }}">{{ post.title }}</a></h3>
+                        <p>{{ post.description }}</p>
+                        <time>{{ post.date }}</time>
+                    </article>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="/js/theme.js"></script>
+</body>
+</html>
