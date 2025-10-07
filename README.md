@@ -147,5 +147,10 @@ A `config.js` file is provided when you first build your page, and it has defaul
   ]
 }
 ```
+Available Themes:
+- default
+- modern
+
+Themes needs a lot of work, i'd appreciate it if you contribute
 <h2>License</h2>
 MIT License © 2025 Yousef Albasel

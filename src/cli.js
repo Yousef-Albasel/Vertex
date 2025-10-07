@@ -186,7 +186,7 @@ program
 // Editor command
 program
     .command('edit')
-    .description('Open the Vertex markdown editor')
+    .description('Open the Vertex editor')
     .option('-f, --file <filename>', 'Open specific file in editor')
     .option('-p, --port <port>', 'API server port', '3001')
     .option('-d, --dir <directory>', 'Project directory', '.')
@@ -195,7 +195,7 @@ program
             console.log('Starting Vertex Editor...');
             
             const projectDir = path.resolve(options.dir);
-            const editorDir = path.join(projectDir, 'markdown-editor');
+            const editorDir = path.join(projectDir, 'editor');
             
             if (!await fs.pathExists(editorDir)) {
                 console.error('❌ Editor not found. Make sure the markdown-editor directory exists.');
