@@ -221,12 +221,11 @@ export const useFileManager = () => {
     }
 
     // Normalize folderPath so it’s always relative to "content"
-    let cleanFolderPath = folderPath.replace(/^content\//, '');
+  let cleanFolderPath = folderPath.replace(/^content\/?/, '');
 
-    // Build the full file path
-    const filePath = cleanFolderPath
-      ? `content/${cleanFolderPath}/${finalFileName}`
-      : `content/${finalFileName}`;
+  const filePath = cleanFolderPath
+    ? `content/${cleanFolderPath}/${finalFileName}`
+    : `content/${finalFileName}`;
 
     // Check if file already exists
     if (files.some(file => file.path === filePath)) {
