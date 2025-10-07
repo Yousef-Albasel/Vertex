@@ -5,3 +5,5 @@ content/*.md
 content/*
 package-lock.json
 config.json
+static/images/*
+!static/images/.gitkeep
