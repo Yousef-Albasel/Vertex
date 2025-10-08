@@ -20,6 +20,8 @@ Vertex is a static site generator originally created to support computer graphic
 <h2>ScreenShots </h2>
 
 <img width="1599" height="730" alt="image" src="https://github.com/user-attachments/assets/dfa4530d-0a9f-4c22-bd88-e0c2ef9af136" />
+<img width="1599" height="731" alt="image" src="https://github.com/user-attachments/assets/b3d1e5a6-c044-4254-82ab-c4f43cb8bc85" />
+<img width="1599" height="735" alt="image" src="https://github.com/user-attachments/assets/86168db6-fcc7-4a88-9efb-09c39254b81f" />
 
 <h2>Installation</h2>
 
