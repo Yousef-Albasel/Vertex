@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - {{ site.name }}</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .series-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2.5rem 2rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 2rem;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+        }
+        .series-header h1 {
+            color: white;
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+        }
+        .series-meta {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        .series-meta span {
+            background: rgba(255,255,255,0.2);
+            padding: 0.4rem 0.9rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        .series-posts {
+            display: grid;
+            gap: 1.5rem;
+        }
+        .series-post-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .series-post-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        .post-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #667eea;
+            color: white;
+            width: 2.2rem;
+            height: 2.2rem;
+            border-radius: 50%;
+            font-weight: bold;
+            margin-right: 1rem;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+        }
+        .post-title {
+            color: #333;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.15rem;
+        }
+        .post-title:hover {
+            color: #667eea;
+        }
+        .post-description {
+            color: #666;
+            margin-top: 0.5rem;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+        .post-date {
+            color: #999;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .series-description {
+            background: var(--card-light);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 2rem;
+            line-height: 1.7;
+            color: var(--text-dark);
+            box-shadow: var(--shadow-sm);
+        }
+        body.dark-mode .series-post-card {
+            background: #2a2a2a;
+            color: #e0e0e0;
+        }
+        body.dark-mode .post-title {
+            color: #e0e0e0;
+        }
+        body.dark-mode .post-title:hover {
+            color: #667eea;
+        }
+        body.dark-mode .series-description {
+            background: rgba(255, 255, 255, 0.05);
+            color: #e0e0e0;
+        }
+        body.dark-mode .post-description {
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    {% include "_navbar.html" %}
+
+    <main class="main-content">
+        <div class="container">
+            <div class="series-header">
+                <h1>{{ title }}</h1>
+                {% if description %}
+                    <p style="margin-top: 1rem; opacity: 0.95; font-size: 1.05rem;">{{ description }}</p>
+                {% endif %}
+                <div class="series-meta">
+                    <span><i class="fas fa-book"></i> {{ postCount }} Posts</span>
+                    {% if category %}<span><i class="fas fa-tag"></i> {{ category }}</span>{% endif %}
+                    <span><i class="fas fa-calendar"></i> {{ date }}</span>
+                </div>
+            </div>
+
+            {% if content %}
+            <div class="series-description">
+                {{ content | safe }}
+            </div>
+            {% endif %}
+
+            <div class="series-posts">
+                {% for post in posts %}
+                <div class="series-post-card">
+                    <div style="display: flex; align-items: flex-start;">
+                        <div class="post-number">{{ loop.index }}</div>
+                        <div style="flex: 1;">
+                            <a href="{{ post.url }}" class="post-title">{{ post.title }}</a>
+                            {% if post.description %}
+                                <div class="post-description">{{ post.description }}</div>
+                            {% endif %}
+                            <div class="post-date">
+                                <i class="far fa-calendar"></i>
+                                {{ post.date }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div style="margin-top: 2.5rem; text-align: center;">
+                <a href="/posts.html" class="back-link" style="font-size: 1rem;">
+                    <i class="fas fa-arrow-left"></i> View All Posts
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <script>
+    const toggleBtn = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+    const themeText = document.querySelector('.theme-toggle-btn span');
+    
+    function setTheme(mode) {
+        document.body.classList.toggle('dark-mode', mode === 'dark');
+        if (mode === 'dark') {
+            themeIcon.className = 'fa-solid fa-sun';
+            if (themeText) themeText.textContent = 'Light Mode';
+        } else {
+            themeIcon.className = 'fa-solid fa-moon';
+            if (themeText) themeText.textContent = 'Dark Mode';
+        }
+        localStorage.setItem('theme', mode);
+    }
+    
+    toggleBtn.addEventListener('click', () => {
+        const isDark = !document.body.classList.contains('dark-mode');
+        setTheme(isDark ? 'dark' : 'light');
+    });
+    
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') setTheme('dark');
+    </script>
+</body>
+</html>

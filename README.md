@@ -150,7 +150,18 @@ A `config.js` file is provided when you first build your page, and it has defaul
 Available Themes:
 - default
 - modern
+- blog
 
 Themes needs a lot of work, i'd appreciate it if you contribute
+
+<h2>How to Deploy on Netlify</h2>
+
+- Upload your project to a github repo.
+- Remove .gitignore so the content and static files get uploaded.
+- Don't include the node_modules folder.
+- Use build command: npx vertex build.
+- Use public directory for deployment.
+Example: albasel.netlify.app
+
 <h2>License</h2>
 MIT License © 2025 Yousef Albasel

@@ -31,10 +31,7 @@ async function ensureDirectories() {
   await fs.ensureDir(IMAGES_DIR);
 }
 
-// Initialize directories on startup
 ensureDirectories();
-
-// Configure multer for image uploads
 const storage = multer.memoryStorage();
 const upload = multer({
   storage: storage,
@@ -49,18 +46,15 @@ const upload = multer({
   }
 });
 
-// Upload image endpoint - handles clipboard paste and file uploads
 app.post('/api/upload-image', upload.single('image'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No image file provided' });
     }
 
-    // Generate unique filename
     const timestamp = Date.now();
     const randomString = crypto.randomBytes(8).toString('hex');
     
-    // Get file extension from mimetype
     let ext = path.extname(req.file.originalname);
     if (!ext) {
       const mimeToExt = {
@@ -79,7 +73,7 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
     await fs.writeFile(imagePath, req.file.buffer);
     const markdownPath = `http://localhost:3001/images/${filename}`;
 
-    console.log(`📸 Uploaded image: ${filename} (${(req.file.size / 1024).toFixed(2)} KB)`);
+    console.log(`Uploaded image: ${filename} (${(req.file.size / 1024).toFixed(2)} KB)`);
 
     res.json({
       success: true,
@@ -151,12 +145,11 @@ async function getMarkdownFilesRecursively(dirPath, basePath = '') {
   return files;
 }
 
-// Get all markdown files from content directory
 app.get('/api/files', async (req, res) => {
   try {
     const files = await getMarkdownFilesRecursively(CONTENT_DIR, 'content');
     files.sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified));
-    console.log(`📝 Found ${files.length} files:`, files.map(f => f.path));
+    console.log(`Found ${files.length} files:`, files.map(f => f.path));
     res.json(files);
   } catch (error) {
     console.error('Error listing files:', error);
@@ -164,7 +157,6 @@ app.get('/api/files', async (req, res) => {
   }
 });
 
-// Middleware to handle file operations
 app.use('/api/file', (req, res, next) => {
   const urlPath = req.url;
   const filePath = urlPath.startsWith('/') ? urlPath.substring(1) : urlPath;
@@ -173,7 +165,6 @@ app.use('/api/file', (req, res, next) => {
   next();
 });
 
-// Handle file operations based on HTTP method
 app.use('/api/file', async (req, res) => {
   try {
     const filePath = req.filePath;
@@ -198,7 +189,7 @@ app.use('/api/file', async (req, res) => {
         frontMatter = parsed.data;
         markdownContent = parsed.content;
       } catch (e) {
-        // If parsing fails, treat as plain markdown
+        
       }
       
       res.json({

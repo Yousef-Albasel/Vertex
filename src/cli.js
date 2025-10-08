@@ -198,11 +198,10 @@ program
             const editorDir = path.join(projectDir, 'editor');
             
             if (!await fs.pathExists(editorDir)) {
-                console.error('❌ Editor not found. Make sure the markdown-editor directory exists.');
+                console.error('Editor not found. Make sure the markdown-editor directory exists.');
                 process.exit(1);
             }
             
-            // Start the API server
             console.log('Starting API server...');
             const apiServer = spawn('node', [path.join(__dirname, 'editor-server.js')], {
                 cwd: projectDir,
