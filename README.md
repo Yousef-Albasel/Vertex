@@ -8,9 +8,17 @@
 
 Vertex is a static site generator originally created to support computer graphics demos inside static sites, and to cover the gaps in other static sites generators, providing a flexible and interactive experience while developing your own static site.
 
+
 </center>
+<h2> Updates 7/10: </h2>
+<ul> 
+<li> <strong>Add Theme Support: </strong>You can change the theme simply by changing the theme name in config file.</li>
+<li> <strong>Image Upload: </strong>Adding images to your content never been easier, just save it to your clipboard then paste it in the editor.</li>  
+</ul>
+
+
 <h2> Features </h2>
-<ul>
+<ul> 
 <li> <strong>Built-in Markdown Editor</strong> with API server  </li>
 <li> <strong>Integrated File Manager</strong> for content and pages  </li>
 <li> <strong>Advanced Formatting & Graphics Engine Support</strong>  </li>
