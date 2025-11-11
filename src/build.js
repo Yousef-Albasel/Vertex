@@ -2,21 +2,36 @@ const fs = require('fs-extra');
 const path = require('path');
 const matter = require('gray-matter');
 const MarkdownIt = require('markdown-it');
+const hljs = require('highlight.js'); // ADD THIS
 const nunjucks = require('nunjucks');
 const { config } = require('process');
 
 const md = MarkdownIt({
   html: true,
   linkify: true,
-  typographer: true
-})
+  typographer: true,
+  highlight: function (str, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return '<pre class="hljs"><code>' +
+               hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
+               '</code></pre>';
+      } catch (__) {}
+    }
+    return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + '</code></pre>';
+  }
+});
 
-// Get the theme directory based on config
+async function getHighlightStyles() {
+    const hljsPath = require.resolve('highlight.js/styles/github-dark.css');
+    const styles = await fs.readFile(hljsPath, 'utf8');
+    return `<style>\n${styles}\n</style>`;
+}
+
 function getThemeDir(projectDir, themeName) {
     const themesDir = path.join(projectDir, 'themes');
     const themeDir = path.join(themesDir, themeName);
     
-    // Fallback to 'layout' directory if theme doesn't exist (backward compatibility)
     if (!fs.existsSync(themeDir)) {
         console.log(`Theme '${themeName}' not found in themes/, using layout/ directory`);
         return path.join(projectDir, 'layout');
@@ -24,6 +39,8 @@ function getThemeDir(projectDir, themeName) {
     
     return themeDir;
 }
+
+
 
 async function build(projectDir = '.',opetions={}){
     const {port = 3000} = opetions;
@@ -62,7 +79,10 @@ async function build(projectDir = '.',opetions={}){
         // Process standalone pages (about, etc.)
         const pages = await processPages(projectDir);
         console.log(`Processed ${pages.length} pages successfully`);
-        
+ 
+        await copyHighlightJsStyles(outputDir);
+        console.log('Syntax highlighting styles copied successfully');
+ 
         await generatePostPages(posts, env, config, outputDir);
         console.log('Post pages generated successfully');
         
@@ -96,6 +116,13 @@ async function build(projectDir = '.',opetions={}){
         console.log('An Error Occured while building:',error);
     }
 };
+
+async function copyHighlightJsStyles(outputDir) {
+    const hljsPath = require.resolve('highlight.js/styles/github-dark.css');
+    const cssDir = path.join(outputDir, 'css');
+    await fs.ensureDir(cssDir);
+    await fs.copy(hljsPath, path.join(cssDir, 'highlight.css'));
+}
 
 async function loadConfig(projectDir) {
     const configPath = path.join(projectDir, 'config.json');

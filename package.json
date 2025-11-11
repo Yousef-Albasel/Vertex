@@ -26,6 +26,8 @@
     "express": "^5.1.0",
     "fs-extra": "^11.3.1",
     "gray-matter": "^4.0.3",
+    "highlight.js": "^11.11.1",
+    "hljs": "^6.2.3",
     "markdown-it": "^14.1.0",
     "multer": "^2.0.2",
     "nunjucks": "^3.2.4",

@@ -71,7 +71,7 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
 
     const imagePath = path.join(IMAGES_DIR, filename);
     await fs.writeFile(imagePath, req.file.buffer);
-    const markdownPath = `http://localhost:3001/images/${filename}`;
+    const markdownPath = `/images/${filename}`;
 
     console.log(`Uploaded image: ${filename} (${(req.file.size / 1024).toFixed(2)} KB)`);
 

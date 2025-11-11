@@ -68,6 +68,7 @@ export default function MarkdownEditor({ value, onChange, onInsert, isDarkMode }
       // Insert markdown image syntax at cursor position
       const imageName = file.name || 'Image';
       const markdownImage = `\n![${imageName}](${data.path})\n`;
+      
       handleInsert(markdownImage);
 
       setUploadStatus(`✓ Uploaded ${data.filename}`);
