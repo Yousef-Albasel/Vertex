@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }} - {{ site.name }}</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/github-dark.css">
+    <link rel="stylesheet" href="../css/highlight.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .series-info {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #333;
             color: white;
             padding: 1.5rem 2rem;
             border-radius: var(--border-radius);
@@ -119,7 +121,7 @@
                         {% if series %}<span class="series-tag"><i class="fas fa-book"></i> Series</span>{% endif %}
                     </div>
                     {% if image %}
-                    <img src="../{{image}}" alt="{{ title }}" class="post-image">
+                    <img src="../images/{{image}}" alt="{{ title }}" class="post-image">
                     {% endif %}
                 </header>
                 
