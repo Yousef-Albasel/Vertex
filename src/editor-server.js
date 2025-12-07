@@ -17,13 +17,13 @@ app.use(cors({
 
 app.use(express.json());
 
-app.use('/images', express.static(IMAGES_DIR));
-console.log(`Serving images from: ${IMAGES_DIR}`);
-
 // Get the project directory (where the server is running from)
 const PROJECT_DIR = process.cwd();
 const CONTENT_DIR = path.join(PROJECT_DIR, 'content');
 const IMAGES_DIR = path.join(PROJECT_DIR, 'static', 'images');
+
+app.use('/images', express.static(IMAGES_DIR));
+console.log(`Serving images from: ${IMAGES_DIR}`);
 
 // Ensure content directory exists
 async function ensureDirectories() {
