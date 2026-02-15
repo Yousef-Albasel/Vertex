@@ -43,21 +43,8 @@ export const useFileManager = () => {
       console.log('loadFiles: Received files:', fileList);
       
       if (fileList.length === 0) {
-        console.log('loadFiles: No files found, creating welcome file...');
-        // Create a default welcome file
-        const welcomeFile = {
-          name: 'welcome.md',
-          path: 'content/welcome.md',
-          directory: 'content',
-          folder: '',
-          content: createWelcomeContent(),
-          modified: true,
-          lastModified: new Date().toISOString()
-        };
-        
-        setFiles([welcomeFile]);
-        setSelectedFile(welcomeFile);
-        console.log('loadFiles: Set welcome file');
+        console.log('loadFiles: No files found');
+        setFiles([]);
       } else {
         console.log('loadFiles: Setting files to state:', fileList);
         setFiles(fileList);
@@ -210,61 +197,71 @@ export const useFileManager = () => {
   const handleCreateFile = async (folderPath = '', fileName = null) => {
     console.log('handleCreateFile: folderPath:', folderPath, 'fileName:', fileName);
 
-    // Get filename from user if not provided
-    const finalFileName = fileName || prompt('Enter file name (with .md extension):');
-    if (!finalFileName) return;
-
-    const validation = validateFileName(finalFileName);
-    if (!validation.valid) {
-      alert(validation.error);
+    // fileName should now be provided by inline UI
+    if (!fileName) {
+      console.log('No filename provided');
       return;
     }
 
-    // Normalize folderPath so it’s always relative to "content"
-  let cleanFolderPath = folderPath.replace(/^content\/?/, '');
+    const validation = validateFileName(fileName);
+    if (!validation.valid) {
+      setError(validation.error);
+      return;
+    }
 
-  const filePath = cleanFolderPath
-    ? `content/${cleanFolderPath}/${finalFileName}`
-    : `content/${finalFileName}`;
+    // Normalize folderPath so it's always relative to "content"
+    let cleanFolderPath = folderPath.replace(/^content\/?/, '');
+
+    const filePath = cleanFolderPath
+      ? `content/${cleanFolderPath}/${fileName}`
+      : `content/${fileName}`;
 
     // Check if file already exists
     if (files.some(file => file.path === filePath)) {
-      alert('A file with this name already exists!');
+      setError('A file with this name already exists!');
       return;
     }
 
     try {
       console.log('handleCreateFile: Creating file on server:', filePath);
 
-      const defaultContent = createDefaultContent(finalFileName, 'content');
+      const defaultContent = createDefaultContent(fileName, 'content');
 
       await fileService.saveFile(filePath, defaultContent);
 
       console.log('handleCreateFile: File created on server, refreshing file list...');
       await loadFiles();
 
-      const newFile = files.find(f => f.path === filePath);
-      if (newFile) {
-        await handleFileSelect(newFile);
-      }
+      // Try to select the new file after refresh
+      setTimeout(async () => {
+        const fileList = await fileService.loadFiles();
+        const newFile = fileList.find(f => f.path === filePath);
+        if (newFile) {
+          await handleFileSelect(newFile);
+        }
+      }, 100);
 
     } catch (err) {
       console.error('handleCreateFile: Error creating file:', err);
-      setError(`Error creating file "${finalFileName}": ${err.message}`);
+      setError(`Error creating file "${fileName}": ${err.message}`);
     }
   };
 
-  const handleCreateFolder = async (parentPath = 'content') => {
-    const folderName = prompt('Enter folder name:');
-    if (!folderName) return;
+  const handleCreateFolder = async (parentPath = 'content', folderName = null) => {
+    // folderName should now be provided by inline UI
+    if (!folderName) {
+      console.log('No folder name provided');
+      return;
+    }
     
     const cleanFolderName = folderName.toLowerCase().replace(/\s+/g, '-');
-    const folderPath = `${parentPath}/${cleanFolderName}`;
-    const isSeries = confirm('Create as a series? (This will add an _index.md file)');
+    const folderPath = parentPath.startsWith('content') 
+      ? `${parentPath}/${cleanFolderName}`
+      : `content/${parentPath}/${cleanFolderName}`;
     
     try {
-      console.log('handleCreateFolder: Creating folder:', folderPath, 'isSeries:', isSeries);
-      await fileService.createFolder(folderPath, isSeries);
+      console.log('handleCreateFolder: Creating folder:', folderPath);
+      await fileService.createFolder(folderPath, false); // Don't prompt for series, create simple folder
       console.log('handleCreateFolder: Folder created, refreshing files...');
       await loadFiles();
       console.log(`Successfully created folder: ${folderPath}`);
@@ -276,11 +273,7 @@ export const useFileManager = () => {
 
   const handleDeleteFile = async (fileToDelete) => {
     if (files.length === 1) {
-      alert('Cannot delete the last file!');
-      return;
-    }
-
-    if (!confirm(`Are you sure you want to delete "${fileToDelete.name}"?`)) {
+      setError('Cannot delete the last file!');
       return;
     }
 

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - {{ site.name }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    {% include "_navbar.html" %}
+
+    <div class="main-content wide">
+        <header class="page-header">
+            <h1>{{ category }}</h1>
+            <p>{{ posts.length }} posts in this category</p>
+            <nav class="breadcrumb">
+                <a href="/categories.html">Categories</a> / {{ category }}
+            </nav>
+        </header>
+
+        <div class="posts-grid">
+            {% for post in posts %}
+            <article class="post-card">
+                {% if post.image %}
+                <img src="{{ post.image }}" alt="{{ post.title }}" class="post-card-image">
+                {% endif %}
+                <div class="post-card-body">
+                    <h3 class="post-card-title"><a href="{{ post.url }}">{{ post.title }}</a></h3>
+                    <p class="post-card-desc">{{ post.description }}</p>
+                    <span class="post-card-meta">{{ post.date }}</span>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+    const toggleBtn = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+    function setTheme(m) {
+        document.body.classList.toggle('dark-mode', m === 'dark');
+        themeIcon.className = m === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        localStorage.setItem('theme', m);
+    }
+    toggleBtn.addEventListener('click', () => setTheme(document.body.classList.contains('dark-mode') ? 'light' : 'dark'));
+    if (localStorage.getItem('theme') === 'dark') setTheme('dark');
+
+    document.getElementById('nav-hamburger').addEventListener('click', () => {
+        document.getElementById('nav-links').classList.toggle('open');
+    });
+    </script>
+</body>
+</html>

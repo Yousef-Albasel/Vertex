@@ -7,6 +7,7 @@ const hljs = require('highlight.js');
 const nunjucks = require('nunjucks');
 const { config } = require('process');
 
+
 const md = MarkdownIt({
   html: true,
   linkify: true,
@@ -401,7 +402,6 @@ async function generatePageFiles(pages, env, config, outputDir) {
 
 async function generateHomePage(posts, series, env, config, outputDir) {
     try {
-        // Get latest posts for cards (first 6)
         const latestPosts = posts.slice(0, 6);
         const quickLinks = Object.entries(config.links || {}).map(([label, obj]) => ({
             label,
@@ -409,7 +409,6 @@ async function generateHomePage(posts, series, env, config, outputDir) {
             icon: obj.icon || null
         }));
         
-        // Render home page
         const html = env.render('index.html', {
             site: config,
             posts: posts,

@@ -7,6 +7,8 @@ export const useKeyboardShortcuts = ({
   onTogglePreview,
   onToggleSidebar,
   onFormatText,
+  onUndo,
+  onRedo,
   disabled = false
 }) => {
   useEffect(() => {
@@ -105,9 +107,28 @@ export const useKeyboardShortcuts = ({
           onFormatText('orderedlist');
         }
       }
+
+      // Undo/Redo shortcuts
+      // Ctrl+Z - Undo
+      if (e.ctrlKey && e.key === 'z' && !e.shiftKey && onUndo) {
+        e.preventDefault();
+        onUndo();
+      }
+      
+      // Ctrl+Shift+Z - Redo
+      if (e.ctrlKey && e.shiftKey && e.key === 'Z' && onRedo) {
+        e.preventDefault();
+        onRedo();
+      }
+      
+      // Ctrl+Y - Redo (alternative)
+      if (e.ctrlKey && e.key === 'y' && onRedo) {
+        e.preventDefault();
+        onRedo();
+      }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onSave, onSaveAll, onCreateFile, onTogglePreview, onToggleSidebar, onFormatText, disabled]);
+  }, [onSave, onSaveAll, onCreateFile, onTogglePreview, onToggleSidebar, onFormatText, onUndo, onRedo, disabled]);
 };

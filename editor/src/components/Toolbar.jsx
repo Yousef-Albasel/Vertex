@@ -19,8 +19,12 @@ import {
   Sun,
   Sidebar,
   Upload,
-  SidebarOpen
+  SidebarOpen,
+  ChevronDown,
+  FileDown,
+  Sparkles
 } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 
 export default function Toolbar({ 
   onInsert, 
@@ -34,8 +38,122 @@ export default function Toolbar({
   isSidebarVisible,
   onToggleSidebar,
   selectedFile,
-  hasModifiedFiles
+  hasModifiedFiles,
+  onAIRequest
 }) {
+  const [bulletDropdownOpen, setBulletDropdownOpen] = useState(false);
+  const [aiDropdownOpen, setAIDropdownOpen] = useState(false);
+  const bulletDropdownRef = useRef(null);
+  const aiDropdownRef = useRef(null);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (bulletDropdownRef.current && !bulletDropdownRef.current.contains(e.target)) {
+        setBulletDropdownOpen(false);
+      }
+      if (aiDropdownRef.current && !aiDropdownRef.current.contains(e.target)) {
+        setAIDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const bulletStyles = [
+    { label: 'Dash (-)', char: '-', format: 'list-dash' },
+    { label: 'Asterisk (*)', char: '*', format: 'list-asterisk' },
+    { label: 'Plus (+)', char: '+', format: 'list-plus' },
+  ];
+
+  const handleBulletStyle = (style) => {
+    onFormatText(style.format);
+    setBulletDropdownOpen(false);
+  };
+
+  const handleAIOption = (mode) => {
+    setAIDropdownOpen(false);
+    if (onAIRequest) {
+      onAIRequest(mode);
+    }
+  };
+
+  // Export to PDF using browser print
+  const handleExportPDF = () => {
+    if (!selectedFile) return;
+    
+    // Get the preview content
+    const previewElement = document.querySelector('.prose');
+    if (!previewElement) {
+      alert('Please switch to preview mode or split view to export PDF');
+      return;
+    }
+    
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('Please allow popups to export PDF');
+      return;
+    }
+    
+    const fileName = selectedFile.name?.replace('.md', '') || 'document';
+    
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>${fileName}</title>
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+            color: #333;
+          }
+          h1 { font-size: 2em; margin-top: 0; }
+          h2 { font-size: 1.5em; }
+          h3 { font-size: 1.25em; }
+          pre {
+            background: #f5f5f5;
+            padding: 1em;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 0.9em;
+          }
+          code {
+            background: #f5f5f5;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-size: 0.9em;
+          }
+          pre code { background: none; padding: 0; }
+          blockquote {
+            border-left: 4px solid #ddd;
+            margin-left: 0;
+            padding-left: 1em;
+            color: #666;
+          }
+          img { max-width: 100%; height: auto; }
+          @media print {
+            body { padding: 20px; }
+          }
+        </style>
+      </head>
+      <body>
+        ${previewElement.innerHTML}
+      </body>
+      </html>
+    `);
+    
+    printWindow.document.close();
+    
+    // Wait for content to load then print
+    setTimeout(() => {
+      printWindow.print();
+    }, 250);
+  };
   
   const handleImageUpload = () => {
   const input = document.createElement('input');
@@ -111,12 +229,6 @@ export default function Toolbar({
       action: () => onFormatText('underline'), 
       tooltip: 'Underline (Ctrl+U)',
       shortcut: 'Ctrl+U'
-    },
-    { 
-      icon: List, 
-      action: () => onFormatText('list'), 
-      tooltip: 'Bullet List (Ctrl+Shift+L)',
-      shortcut: 'Ctrl+Shift+L'
     },
     { 
       icon: ListOrdered, 
@@ -196,6 +308,91 @@ export default function Toolbar({
           <item.icon size={16} />
         </button>
       ))}
+      
+      {/* Bullet Style Dropdown */}
+      <div className="relative" ref={bulletDropdownRef}>
+        <button
+          onClick={() => setBulletDropdownOpen(!bulletDropdownOpen)}
+          className={`p-2 rounded transition-colors flex items-center gap-0.5 ${
+            isDarkMode
+              ? 'hover:bg-gray-700 text-gray-300'
+              : 'hover:bg-gray-200 text-gray-700'
+          }`}
+          title="Bullet List Styles"
+          disabled={!selectedFile}
+        >
+          <List size={16} />
+          <ChevronDown size={12} />
+        </button>
+        
+        {bulletDropdownOpen && (
+          <div className={`absolute top-full left-0 mt-1 py-1 rounded shadow-lg border z-50 min-w-[120px] ${
+            isDarkMode 
+              ? 'bg-gray-800 border-gray-600' 
+              : 'bg-white border-gray-200'
+          }`}>
+            {bulletStyles.map((style) => (
+              <button
+                key={style.format}
+                onClick={() => handleBulletStyle(style)}
+                className={`w-full text-left px-3 py-1.5 text-sm ${
+                  isDarkMode
+                    ? 'hover:bg-gray-700 text-gray-200'
+                    : 'hover:bg-gray-100 text-gray-700'
+                }`}
+              >
+                {style.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      
+      {/* AI Dropdown */}
+      <div className="relative" ref={aiDropdownRef}>
+        <button
+          onClick={() => setAIDropdownOpen(!aiDropdownOpen)}
+          className={`p-2 rounded transition-colors flex items-center gap-0.5 ${
+            isDarkMode
+              ? 'hover:bg-gray-700 text-purple-400'
+              : 'hover:bg-gray-200 text-purple-600'
+          }`}
+          title="AI Assistant"
+          disabled={!selectedFile}
+        >
+          <Sparkles size={16} />
+          <ChevronDown size={12} />
+        </button>
+        
+        {aiDropdownOpen && (
+          <div className={`absolute top-full left-0 mt-1 py-1 rounded shadow-lg border z-50 min-w-[160px] ${
+            isDarkMode 
+              ? 'bg-gray-800 border-gray-600' 
+              : 'bg-white border-gray-200'
+          }`}>
+            <button
+              onClick={() => handleAIOption('document')}
+              className={`w-full text-left px-3 py-1.5 text-sm ${
+                isDarkMode
+                  ? 'hover:bg-gray-700 text-gray-200'
+                  : 'hover:bg-gray-100 text-gray-700'
+              }`}
+            >
+              Review Document
+            </button>
+            <button
+              onClick={() => handleAIOption('selection')}
+              className={`w-full text-left px-3 py-1.5 text-sm ${
+                isDarkMode
+                  ? 'hover:bg-gray-700 text-gray-200'
+                  : 'hover:bg-gray-100 text-gray-700'
+              }`}
+            >
+            Improve Selection
+            </button>
+          </div>
+        )}
+      </div>
             
       <div className="ml-auto flex gap-2">
         <button
@@ -260,6 +457,20 @@ export default function Toolbar({
           {selectedFile?.modified && (
             <span className="w-2 h-2 bg-orange-500 rounded-full ml-1"></span>
           )}
+        </button>
+        
+        <button
+          onClick={handleExportPDF}
+          className={`p-2 rounded transition-colors flex items-center gap-1 ${
+            isDarkMode
+              ? 'hover:bg-gray-700 text-purple-400'
+              : 'hover:bg-gray-200 text-purple-600'
+          }`}
+          title="Export as PDF"
+          disabled={!selectedFile}
+        >
+          <FileDown size={16} />
+          <span className="hidden sm:inline">PDF</span>
         </button>
       </div>
     </div>

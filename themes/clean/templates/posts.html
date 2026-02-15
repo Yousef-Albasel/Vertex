@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - {{ site.name }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    {% include "_navbar.html" %}
+
+    <div class="main-content wide">
+        <header class="page-header">
+            <h1>{{ title }}</h1>
+            <p id="posts-count">{{ posts.length }} posts total</p>
+        </header>
+
+        <div class="posts-grid" id="posts-grid">
+            {% for post in posts %}
+            <article class="post-card" data-page-item>
+                {% if post.image %}
+                <img src="{{ post.image }}" alt="{{ post.title }}" class="post-card-image">
+                {% endif %}
+                <div class="post-card-body">
+                    {% if post.category %}
+                    <span class="post-card-category">{{ post.category }}</span>
+                    {% endif %}
+                    <h3 class="post-card-title"><a href="{{ post.url }}">{{ post.title }}</a></h3>
+                    <p class="post-card-desc">{{ post.description }}</p>
+                    <span class="post-card-meta">{{ post.date }}</span>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        <nav class="pagination" id="pagination"></nav>
+    </div>
+
+    <script>
+    const toggleBtn = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+    function setTheme(m) {
+        document.body.classList.toggle('dark-mode', m === 'dark');
+        themeIcon.className = m === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        localStorage.setItem('theme', m);
+    }
+    toggleBtn.addEventListener('click', () => setTheme(document.body.classList.contains('dark-mode') ? 'light' : 'dark'));
+    if (localStorage.getItem('theme') === 'dark') setTheme('dark');
+
+    document.getElementById('nav-hamburger').addEventListener('click', () => {
+        document.getElementById('nav-links').classList.toggle('open');
+    });
+
+    // Pagination
+    (function() {
+        const PER_PAGE = 6;
+        const items = document.querySelectorAll('[data-page-item]');
+        const total = items.length, pages = Math.ceil(total / PER_PAGE);
+        let cur = 1;
+        function show(p) {
+            cur = p;
+            const s = (p-1)*PER_PAGE, e = s+PER_PAGE;
+            items.forEach((el,i) => el.style.display = (i>=s && i<e) ? '' : 'none');
+            document.getElementById('posts-count').textContent = `Showing ${s+1}–${Math.min(e,total)} of ${total} posts`;
+            render();
+        }
+        function render() {
+            const nav = document.getElementById('pagination');
+            if (pages <= 1) { nav.style.display='none'; return; }
+            let h = '';
+            h += cur > 1
+                ? `<a href="#" class="pagination-btn" data-p="${cur-1}"><i class="fas fa-arrow-left"></i> Prev</a>`
+                : `<span class="pagination-btn disabled"><i class="fas fa-arrow-left"></i> Prev</span>`;
+            h += '<div class="pagination-pages">';
+            for (let i=1;i<=pages;i++) h += i===cur
+                ? `<span class="pagination-page active">${i}</span>`
+                : `<a href="#" class="pagination-page" data-p="${i}">${i}</a>`;
+            h += '</div>';
+            h += cur < pages
+                ? `<a href="#" class="pagination-btn" data-p="${cur+1}">Next <i class="fas fa-arrow-right"></i></a>`
+                : `<span class="pagination-btn disabled">Next <i class="fas fa-arrow-right"></i></span>`;
+            nav.innerHTML = h;
+            nav.querySelectorAll('[data-p]').forEach(el => el.addEventListener('click', e => {
+                e.preventDefault();
+                show(+el.dataset.p);
+                document.querySelector('.page-header').scrollIntoView({behavior:'smooth'});
+            }));
+        }
+        if (total > 0) show(1);
+    })();
+    </script>
+</body>
+</html>

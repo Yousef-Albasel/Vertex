@@ -6,32 +6,65 @@
 [![Issues](https://img.shields.io/github/issues/Yousef-Albasel/vertex?style=flat&color=orange)](https://github.com/Yousef-Albasel/vertex/issues)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](https://github.com/Yousef-Albasel/vertex/pulls)
 
-Vertex is a static site generator originally created to support computer graphics demos inside static sites, and to cover the gaps in other static sites generators, providing a flexible and interactive experience while developing your own static site.
+Vertex is a static site generator originally created to support computer graphics demos inside static sites, and to cover the gaps in other static site generators, providing a flexible and interactive experience while developing your own static site.
 
+---
 
-</center>
-<h2> Updates 7/10: </h2>
-<ul> 
-<li> <strong>Add Theme Support: </strong>You can change the theme simply by changing the theme name in config file.</li>
-<li> <strong>Image Upload: </strong>Adding images to your content never been easier, just save it to your clipboard then paste it in the editor.</li>  
-</ul>
+##  Features
 
+### Static Site Generator
+- **Markdown-based content** with frontmatter support (title, description, date, category, series, images)
+- **Syntax highlighting** for code blocks via highlight.js with Catppuccin-inspired color themes
+- **Series support** — group related posts into ordered series with auto-generated index pages and prev/next navigation
+- **Categories** — auto-generated category pages with post counts
+- **Client-side pagination** — posts listing and home page paginate with smooth in-page navigation (6 posts per page)
+- **Theming system** — switch between themes via `config.json`; each theme has its own templates and styles
+- **Fast development server** with live reload
 
-<h2> Features </h2>
-<ul> 
-<li> <strong>Built-in Markdown Editor</strong> with API server  </li>
-<li> <strong>Integrated File Manager</strong> for content and pages  </li>
-<li> <strong>Advanced Formatting & Graphics Engine Support</strong>  </li>
-<li> <strong>Fast Development Server</strong> with live reload  </li>
-<li> <strong>Flexible CLI commands</strong> for building, serving, and editing  
-</ul>
-<h2>ScreenShots </h2>
+### Built-in Markdown Editor
+- **Rich toolbar** with formatting buttons: bold, italic, underline, headers (H1–H3), lists (ordered/unordered with multiple bullet styles), blockquote, inline code, code blocks, links, and images
+- **Live preview** — side-by-side markdown editing and rendered preview, togglable with a shortcut
+- **Undo / Redo** — full history with debounced batching (up to 100 states), works via toolbar or keyboard shortcuts
+- **Image upload** — drag-and-drop or click to upload images directly into posts
+- **PDF export** — export the current post preview to PDF from the toolbar
+- **AI-powered writing assistance** (optional, requires OpenAI API key):
+  - *Improve Selection* — AI rewrites highlighted text
+  - *Improve Full Document* — AI rewrites entire post
+  - Accept or reject AI suggestions via a diff-style modal
+- **Integrated file manager** — create, rename, delete files and folders; sidebar with file tree
+- **Dark mode** — toggle between light and dark editor UI
+
+### Keyboard Shortcuts
+
+| Shortcut | Action |
+|---|---|
+| `Ctrl+S` | Save current file |
+| `Ctrl+Shift+S` | Save all files |
+| `Ctrl+N` | New file |
+| `Ctrl+P` | Toggle preview |
+| `Ctrl+Shift+B` | Toggle sidebar |
+| `Ctrl+B` | Bold |
+| `Ctrl+I` | Italic |
+| `Ctrl+U` | Underline |
+| `Ctrl+K` | Insert link |
+| `` Ctrl+` `` | Inline code |
+| `Ctrl+Shift+~` | Code block |
+| `Ctrl+Shift+>` | Blockquote |
+| `Ctrl+1/2/3` | H1 / H2 / H3 |
+| `Ctrl+Shift+L` | Unordered list |
+| `Ctrl+Shift+O` | Ordered list |
+| `Ctrl+Z` | Undo |
+| `Ctrl+Shift+Z` / `Ctrl+Y` | Redo |
+
+---
+
+## 📸 Screenshots
 
 <img width="1599" height="730" alt="image" src="https://github.com/user-attachments/assets/dfa4530d-0a9f-4c22-bd88-e0c2ef9af136" />
-<img width="1599" height="731" alt="image" src="https://github.com/user-attachments/assets/b3d1e5a6-c044-4254-82ab-c4f43cb8bc85" />
-<img width="1599" height="735" alt="image" src="https://github.com/user-attachments/assets/86168db6-fcc7-4a88-9efb-09c39254b81f" />
 
-<h2>Installation</h2>
+---
+
+## 🚀 Installation
 
 ```bash
 # Clone the repository
@@ -45,133 +78,184 @@ npm install
 npm install -g .
 ```
 
-<h2>Getting Started</h2>
+---
 
-For now, Vertex comes with a standard theme, defined in the layout folder, which you can change if you wanted, more themes are to come soon. Static folder is used to import your css files, images and custom fonts if needed. Conent folder is where all your content goes.
+## 📖 Getting Started
 
 Vertex provides multiple commands for managing your site:
 
-1. Build the site
-`vertex build`
+### CLI Commands
 
-2. Start development server
-`vertex serve`
+**Build the site**
+```bash
+vertex build
 ```
-Options:
--p, --port <port> → Port to serve on (default: 3000)
--d, --dir <directory> → Project directory (default: .)
+
+**Start development server**
+```bash
+vertex serve
 ```
-4. Open the editor page
-`vertex edit`
+| Option | Description | Default |
+|---|---|---|
+| `-p, --port <port>` | Port to serve on | `3000` |
+| `-d, --dir <directory>` | Project directory | `.` |
+
+**Open the editor**
+```bash
+vertex edit
 ```
-Options:
--f, --file <filename> → Open a specific file in the editor
--p, --port <port> → API server port (default: 3001)
--d, --dir <directory> → Project directory (default: .)
-```
-6. Create new conent
+| Option | Description | Default |
+|---|---|---|
+| `-f, --file <filename>` | Open a specific file | — |
+| `-p, --port <port>` | API server port | `3001` |
+| `-d, --dir <directory>` | Project directory | `.` |
+
+**Create new content**
+```bash
 vertex create <filename>
 ```
-Options:
--p, --port <port> → API server port (default: 3001)
--d, --dir <directory> → Project directory (default: .)
-```
-Example: 
-```
-# Create a new blog post
-vertex create my-first-post
-```
 
-Example Workflow:
-```
-# Build the site
-vertex build
-
-# Run dev server
-vertex serve
-
-# Open editor for interactive writing
-vertex edit
-
-# Create new content
-vertex create hello-world
-
-# Create new theme
+**Theme management**
+```bash
+# Create a new theme
 vertex theme create my-awesome-theme
 
-# Set Theme
+# Set active theme
 vertex theme set my-awesome-theme
 
-# view all themes
+# List all themes
 vertex theme list
-
 ```
 
-The editor has all sorts of functionality for creating files, folders renaming them and deleting.
+### Example Workflow
 
-<h2> Project Structure </h2>
+```bash
+vertex build        # Build the site
+vertex serve        # Run dev server at localhost:3000
+vertex edit         # Open editor at localhost:3001
+vertex create hello-world   # Create a new post
+```
+
+---
+
+## 📁 Project Structure
 
 ```
 my-vertex-project/
-├─ content/         # Blog posts (Markdown)
-├─ layout/          # Layout templates
-├─ static/          # Static assets (CSS, JS, images)
-├─ public/           # Generated site output
-└─ config.js # Project configuration
+├── content/           # Blog posts (Markdown with frontmatter)
+├── themes/            # Theme templates and styles
+│   ├── minimal/       # Sidebar-based theme
+│   │   ├── templates/ # Nunjucks HTML templates
+│   │   └── static/    # CSS, images, fonts
+│   └── clean/         # Top-nav modern theme
+│       ├── templates/
+│       └── static/
+├── editor/            # Built-in React markdown editor
+│   └── src/
+│       ├── components/  # Editor UI (Toolbar, Sidebar, AIModal, etc.)
+│       ├── hooks/       # useUndoRedo, useKeyboardShortcuts, useFileManager
+│       └── services/    # AI service, file service
+├── src/               # Core build engine
+│   ├── build.js       # Static site builder
+│   ├── cli.js         # CLI entry point
+│   └── editor-server.js  # Editor API server
+├── public/            # Generated site output (gitignored)
+└── config.json        # Site configuration
 ```
 
-<h2> Configuration </h2>
+---
 
-A `config.js` file is provided when you first build your page, and it has default parameters. This is how you can set it up:
+## 🎨 Themes
 
-```
+Vertex ships with two built-in themes:
+
+| Theme | Description |
+|---|---|
+| **minimal** | Fixed left sidebar, classic blog layout |
+| **clean** | Top navigation bar, centered content, card-based with hover animations, Inter font |
+
+Both themes include:
+- Light and dark mode with smooth toggle
+- Responsive mobile design
+- Syntax-highlighted code blocks
+- Series navigation
+- Pagination
+- Categories grid
+
+### Switching Themes
+
+Set the `theme` field in `config.json`:
+
+```json
 {
-  // Basic site metadata
-  "name": "Your Name",                // The site owner’s name, shown in headers/footers
-  "description": "Short bio here",    // A tagline or about text
+  "theme": "clean"
+}
+```
+
+Then rebuild: `vertex build`
+
+---
+
+## ⚙️ Configuration
+
+The `config.json` file in your project root controls site metadata, navigation, and theming:
+
+```jsonc
+{
+  "name": "Your Name",                // Site name, shown in headers
+  "description": "Short bio here",    // Tagline or about text
   "email": "you@example.com",         // Contact email
-  "avatar": "/images/avatar.jpeg",    // Path to profile/avatar image
-  "baseURL": "http://localhost:3000", // Base URL of the site (change in production)
-  "theme": "default"                  // Current Theme
-  // Navigation links (appear in menus or navbars)
+  "avatar": "/images/avatar.jpeg",    // Path to profile image
+  "baseURL": "http://localhost:3000", // Base URL (change for production)
+  "theme": "clean",                   // Active theme (minimal | clean)
+
+  // Navigation links
   "links": {
-    "About Me": { 
-      "href": "/about.html",              // Internal page or external URL
-      "icon": "fa-solid fa-user"          // Font Awesome icon class
-    },
-    "Resume": { 
-      "href": "https://example.com/resume.pdf",
-      "icon": "fa-solid fa-file-alt"
-    },
-    "Categories": {
-      "href": "/categories.html",
-      "icon": "fa-solid fa-list"
-    }
+    "About Me": { "href": "/aboutme.html", "icon": "fa-solid fa-user" },
+    "Resume":   { "href": "https://example.com/resume.pdf", "icon": "fa-solid fa-file-alt" },
+    "Categories": { "href": "/categories.html", "icon": "fa-solid fa-list" }
   },
 
-  // Social icons (rendered as a row of social links)
+  // Social icons
   "social": [
-    { "url": "mailto:you@example.com",     "icon": "fa-solid fa-envelope" },
-    { "url": "https://github.com/yourname","icon": "fa-brands fa-github" },
-    { "url": "https://twitter.com/handle", "icon": "fa-brands fa-twitter" }
+    { "url": "mailto:you@example.com",      "icon": "fa-solid fa-envelope" },
+    { "url": "https://github.com/yourname", "icon": "fa-brands fa-github" },
+    { "url": "https://twitter.com/handle",  "icon": "fa-brands fa-twitter" }
   ]
 }
 ```
-Available Themes:
-- default
-- modern
-- blog
 
-Themes needs a lot of work, i'd appreciate it if you contribute
+---
 
-<h2>How to Deploy on Netlify</h2>
+## AI Integration (Optional)
 
-- Upload your project to a github repo.
-- Remove .gitignore so the content and static files get uploaded.
-- Don't include the node_modules folder.
-- Use build command: npx vertex build.
-- Use public directory for deployment.
-Example: albasel.netlify.app
+Vertex's editor supports AI-powered writing assistance via OpenAI. To enable:
 
-<h2>License</h2>
+1. Set the `OPENAI_API_KEY` environment variable
+2. Launch the editor: `vertex edit`
+3. Use the **✨ AI** dropdown in the toolbar to:
+   - **Improve Selection** — rewrites highlighted text
+   - **Improve Full Document** — rewrites the entire post
+
+AI suggestions appear in a modal where you can accept or reject the changes.
+
+---
+
+## Deployment
+
+Vertex generates a fully static `public/` directory that can be deployed to any static hosting:
+
+**Netlify** — set the build command in `netlify.toml`:
+```toml
+[build]
+  command = "node src/cli.js build"
+  publish = "public"
+```
+
+> **Note:** Use `node src/cli.js build` instead of `npx vertex build` to avoid permission issues on Linux hosts.
+
+---
+
+## License
+
 MIT License © 2025 Yousef Albasel

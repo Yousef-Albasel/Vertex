@@ -5,15 +5,25 @@ import { oneDark, oneLight } from "react-syntax-highlighter/dist/esm/styles/pris
 import matter from "gray-matter";
 
 const CodeBlock = memo(({ language, value, isDarkMode }) => (
-  <SyntaxHighlighter
-    style={isDarkMode ? oneDark : oneLight}
-    language={language || "text"}
-    PreTag="div"
-    className="rounded-lg my-3 font-mono text-sm"
-    customStyle={{ margin: 0, padding: '1rem', overflowX: 'auto', maxWidth: '100%' }}
-  >
-    {value}
-  </SyntaxHighlighter>
+  <div className="relative w-full overflow-hidden my-3">
+    <SyntaxHighlighter
+      style={isDarkMode ? oneDark : oneLight}
+      language={language || "text"}
+      PreTag="div"
+      className="rounded-lg font-mono text-sm"
+      customStyle={{ 
+        margin: 0, 
+        padding: '1rem', 
+        overflowX: 'auto', 
+        width: '100%',
+        maxWidth: '100%',
+        boxSizing: 'border-box'
+      }}
+      wrapLongLines={false}
+    >
+      {value}
+    </SyntaxHighlighter>
+  </div>
 ));
 
 const createComponents = (isDarkMode) => ({
@@ -54,27 +64,55 @@ const createComponents = (isDarkMode) => ({
   },
 });
 
-export default memo(function PreviewPane({ markdown, isDarkMode }) {
+export default memo(function PreviewPane({ markdown, isDarkMode, cursorPercent = 0, isAtBottom = false }) {
   const { content } = useMemo(() => matter(markdown || ""), [markdown]);
   const components = useMemo(() => createComponents(isDarkMode), [isDarkMode]);
 
   const containerRef = useRef(null);
+  const lastPercent = useRef(0);
 
-  // scroll to bottom whenever markdown changes
+  // Sync scroll with cursor position when typing
   useEffect(() => {
     const container = containerRef.current;
-    if (container) {
+    if (!container) return;
+    
+    const maxScroll = container.scrollHeight - container.clientHeight;
+    if (maxScroll <= 0) return;
+    
+    // If at the bottom, always scroll to absolute bottom
+    if (isAtBottom) {
       container.scrollTop = container.scrollHeight;
+      return;
     }
-  }, [content]);
+    
+    // Only scroll if percent changed meaningfully
+    if (Math.abs(cursorPercent - lastPercent.current) < 0.01) return;
+    lastPercent.current = cursorPercent;
+    
+    // Calculate position and center it in the viewport
+    const contentPosition = cursorPercent * container.scrollHeight;
+    const halfViewport = container.clientHeight / 2;
+    const targetScroll = Math.max(0, Math.min(maxScroll, contentPosition - halfViewport)) + 20;
+    
+    container.scrollTop = targetScroll;
+  }, [cursorPercent, isAtBottom, content]);
 
   return (
     <div
       ref={containerRef}
       className={`h-full overflow-y-auto overflow-x-hidden p-4 prose max-w-none ${isDarkMode ? "text-gray-200" : "text-gray-800"}`}
-      style={{ wordWrap: 'break-word', overflowWrap: 'break-word', boxSizing: 'border-box' }}
+      style={{ 
+        wordWrap: 'break-word', 
+        overflowWrap: 'break-word', 
+        boxSizing: 'border-box',
+        minWidth: 0
+      }}
     >
-      <ReactMarkdown components={components}>{content}</ReactMarkdown>
+      <div style={{ maxWidth: '100%', overflow: 'hidden' }}>
+        <ReactMarkdown components={components}>{content}</ReactMarkdown>
+      </div>
     </div>
   );
 });
+
+

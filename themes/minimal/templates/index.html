@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ site.name }}</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -65,20 +65,22 @@
             <!-- All Posts List -->
             <section class="all-posts">
                 <h2>All Posts</h2>
-                <div class="posts-list">
+                <div class="posts-list" id="all-posts-list">
                     {% for post in posts %}
-                    <article class="post-item">
+                    <article class="post-item" data-page-item>
                         <h3><a href="{{ post.url }}">{{ post.title }}</a></h3>
                         <p>{{ post.description }}</p>
                         <time>{{ post.date }}</time>
                     </article>
                     {% endfor %}
                 </div>
+                <nav class="pagination" id="pagination"></nav>
             </section>
         </div>
     </main>
     
     <script>
+    // Theme toggle
     const toggleBtn = document.getElementById('theme-toggle');
     const themeIcon = document.getElementById('theme-icon');
     const themeText = document.querySelector('.theme-toggle-btn span');
@@ -102,6 +104,68 @@
     
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') setTheme('dark');
+
+    // Client-side pagination for "All Posts"
+    (function() {
+        const ITEMS_PER_PAGE = 6;
+        const items = document.querySelectorAll('[data-page-item]');
+        const totalItems = items.length;
+        const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+        let currentPage = 1;
+
+        function showPage(page) {
+            currentPage = page;
+            const start = (page - 1) * ITEMS_PER_PAGE;
+            const end = start + ITEMS_PER_PAGE;
+
+            items.forEach((item, i) => {
+                item.style.display = (i >= start && i < end) ? '' : 'none';
+            });
+
+            renderPagination();
+        }
+
+        function renderPagination() {
+            const nav = document.getElementById('pagination');
+            if (totalPages <= 1) { nav.style.display = 'none'; return; }
+
+            let html = '';
+
+            if (currentPage > 1) {
+                html += `<a href="#" class="pagination-btn pagination-prev" data-page="${currentPage - 1}"><i class="fas fa-arrow-left"></i> Previous</a>`;
+            } else {
+                html += `<span class="pagination-btn pagination-prev disabled"><i class="fas fa-arrow-left"></i> Previous</span>`;
+            }
+
+            html += '<div class="pagination-pages">';
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPage) {
+                    html += `<span class="pagination-page active">${i}</span>`;
+                } else {
+                    html += `<a href="#" class="pagination-page" data-page="${i}">${i}</a>`;
+                }
+            }
+            html += '</div>';
+
+            if (currentPage < totalPages) {
+                html += `<a href="#" class="pagination-btn pagination-next" data-page="${currentPage + 1}">Next <i class="fas fa-arrow-right"></i></a>`;
+            } else {
+                html += `<span class="pagination-btn pagination-next disabled">Next <i class="fas fa-arrow-right"></i></span>`;
+            }
+
+            nav.innerHTML = html;
+
+            nav.querySelectorAll('[data-page]').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showPage(parseInt(el.dataset.page));
+                    document.querySelector('.all-posts').scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+        }
+
+        if (totalItems > 0) showPage(1);
+    })();
     </script>
 </body>
 </html>

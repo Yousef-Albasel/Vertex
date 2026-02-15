@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - {{ site.name }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    {% include "_navbar.html" %}
+
+    <div class="main-content">
+        <!-- Series info banner -->
+        {% if seriesInfo %}
+        <div class="series-banner">
+            <div>
+                <strong>{{ seriesInfo.title }}</strong>
+                — <a href="/{{ series }}/index.html">Series Overview</a>
+            </div>
+            {% if seriesInfo.posts %}
+            <span class="series-progress">Part {{ order }} of {{ seriesInfo.posts.length }}</span>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <article class="article">
+            <header class="article-header">
+                <h1>{{ title }}</h1>
+                <div class="article-meta">
+                    {% if category %}
+                    <span class="article-category">{{ category }}</span>
+                    {% endif %}
+                    <time>{{ date }}</time>
+                </div>
+                {% if image %}
+                <img src="{{ image }}" alt="{{ title }}" class="article-image">
+                {% endif %}
+            </header>
+
+            <div class="post-content">
+                {{ content | safe }}
+            </div>
+        </article>
+
+        <!-- Series navigation -->
+        {% if seriesInfo and seriesInfo.posts %}
+        <nav class="series-nav">
+            {% if prevPost %}
+            <a href="{{ prevPost.url }}" class="series-nav-link">
+                <span class="series-nav-label">← Previous</span>
+                <span class="series-nav-title">{{ prevPost.title }}</span>
+            </a>
+            {% else %}
+            <div class="series-nav-placeholder"></div>
+            {% endif %}
+
+            {% if nextPost %}
+            <a href="{{ nextPost.url }}" class="series-nav-link" style="text-align:right;">
+                <span class="series-nav-label">Next →</span>
+                <span class="series-nav-title">{{ nextPost.title }}</span>
+            </a>
+            {% else %}
+            <div class="series-nav-placeholder"></div>
+            {% endif %}
+        </nav>
+        {% endif %}
+    </div>
+
+    <script>
+    const toggleBtn = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+    function setTheme(m) {
+        document.body.classList.toggle('dark-mode', m === 'dark');
+        themeIcon.className = m === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        localStorage.setItem('theme', m);
+    }
+    toggleBtn.addEventListener('click', () => setTheme(document.body.classList.contains('dark-mode') ? 'light' : 'dark'));
+    if (localStorage.getItem('theme') === 'dark') setTheme('dark');
+
+    document.getElementById('nav-hamburger').addEventListener('click', () => {
+        document.getElementById('nav-links').classList.toggle('open');
+    });
+
+    // Copy buttons
+    document.querySelectorAll('pre.hljs').forEach(pre => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'code-wrapper';
+        pre.parentNode.insertBefore(wrapper, pre);
+        wrapper.appendChild(pre);
+        const btn = document.createElement('button');
+        btn.className = 'copy-btn';
+        btn.textContent = 'Copy';
+        wrapper.appendChild(btn);
+        btn.addEventListener('click', () => {
+            const code = pre.querySelector('code');
+            navigator.clipboard.writeText(code ? code.textContent : pre.textContent);
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Copy', 1500);
+        });
+    });
+    </script>
+</body>
+</html>

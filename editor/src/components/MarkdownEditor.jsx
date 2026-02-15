@@ -1,9 +1,25 @@
 import { useState, useRef, useCallback, useEffect, memo } from "react";
 
-export default function MarkdownEditor({ value, onChange, onInsert, isDarkMode }) {
+export default function MarkdownEditor({ value, onChange, onInsert, isDarkMode, onCursorPosition }) {
   const textareaRef = useRef(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
+
+  // Detect cursor position when typing
+  const handleChange = useCallback((e) => {
+    const textarea = e.target;
+    const newValue = e.target.value;
+    onChange(newValue);
+    
+    // Send cursor position info
+    if (onCursorPosition && textarea) {
+      const cursorPos = textarea.selectionStart;
+      const totalLength = newValue.length || 1;
+      const cursorPercent = cursorPos / totalLength;
+      const isAtBottom = cursorPos >= totalLength - 5;
+      onCursorPosition({ percent: cursorPercent, isAtBottom });
+    }
+  }, [onChange, onCursorPosition]);
 
   // --- Insert / Format Handlers ---
   const handleInsert = useCallback((text) => {
@@ -54,6 +70,44 @@ export default function MarkdownEditor({ value, onChange, onInsert, isDarkMode }
         break;
       case 'link':
         newText = selectedText ? `[${selectedText}](url)` : '[text](url)';
+        cursorOffset = newText.length;
+        break;
+      case 'underline':
+        // Markdown doesn't have native underline, use HTML
+        newText = selectedText ? `<u>${selectedText}</u>` : '<u>text</u>';
+        cursorOffset = newText.length;
+        break;
+      case 'quote':
+        newText = selectedText ? `> ${selectedText}` : '> quote';
+        cursorOffset = newText.length;
+        break;
+      case 'h1':
+        newText = selectedText ? `# ${selectedText}` : '# Heading 1';
+        cursorOffset = newText.length;
+        break;
+      case 'h2':
+        newText = selectedText ? `## ${selectedText}` : '## Heading 2';
+        cursorOffset = newText.length;
+        break;
+      case 'h3':
+        newText = selectedText ? `### ${selectedText}` : '### Heading 3';
+        cursorOffset = newText.length;
+        break;
+      case 'list':
+      case 'list-dash':
+        newText = selectedText ? `- ${selectedText}` : '- item';
+        cursorOffset = newText.length;
+        break;
+      case 'list-asterisk':
+        newText = selectedText ? `* ${selectedText}` : '* item';
+        cursorOffset = newText.length;
+        break;
+      case 'list-plus':
+        newText = selectedText ? `+ ${selectedText}` : '+ item';
+        cursorOffset = newText.length;
+        break;
+      case 'orderedlist':
+        newText = selectedText ? `1. ${selectedText}` : '1. item';
         cursorOffset = newText.length;
         break;
       default:
@@ -135,23 +189,131 @@ export default function MarkdownEditor({ value, onChange, onInsert, isDarkMode }
     const textarea = textareaRef.current;
     if (!textarea) return;
 
-    // Tab = indent
+    const start = textarea.selectionStart;
+    const currentValue = value || '';
+    
+    // Get current line info
+    const beforeCursor = currentValue.slice(0, start);
+    const lineStart = beforeCursor.lastIndexOf('\n') + 1;
+    const currentLine = beforeCursor.slice(lineStart);
+    
+    // Match list patterns (with leading spaces for nesting)
+    const unorderedMatch = currentLine.match(/^(\s*)([-*+])\s(.*)$/);
+    const orderedMatch = currentLine.match(/^(\s*)(\d+)\.\s(.*)$/);
+
+    // Tab = indent / create nested list
     if (e.key === 'Tab') {
       e.preventDefault();
-      const start = textarea.selectionStart;
-      const currentValue = value || '';
-      const before = currentValue.slice(0, start);
-      const after = currentValue.slice(start);
-      onChange(before + '    ' + after);
-      setTimeout(() => {
-        textarea.setSelectionRange(start + 4, start + 4);
-      }, 0);
+      
+      if (unorderedMatch || orderedMatch) {
+        // If on a list line, indent the current line (make it nested)
+        const indent = '    ';
+        const newValue = currentValue.slice(0, lineStart) + indent + currentValue.slice(lineStart);
+        onChange(newValue);
+        setTimeout(() => {
+          textarea.setSelectionRange(start + 4, start + 4);
+        }, 0);
+      } else {
+        // Normal tab
+        const before = currentValue.slice(0, start);
+        const after = currentValue.slice(start);
+        onChange(before + '    ' + after);
+        setTimeout(() => {
+          textarea.setSelectionRange(start + 4, start + 4);
+        }, 0);
+      }
+      return;
+    }
+
+    // Shift+Tab = unindent
+    if (e.shiftKey && e.key === 'Tab') {
+      e.preventDefault();
+      
+      // Check if line starts with spaces
+      if (currentLine.startsWith('    ')) {
+        const newValue = currentValue.slice(0, lineStart) + currentValue.slice(lineStart + 4);
+        onChange(newValue);
+        setTimeout(() => {
+          textarea.setSelectionRange(Math.max(lineStart, start - 4), Math.max(lineStart, start - 4));
+        }, 0);
+      }
+      return;
+    }
+
+    // Enter = continue list
+    if (e.key === 'Enter') {
+      // Check for unordered list
+      if (unorderedMatch) {
+        const [, indent, bullet, content] = unorderedMatch;
+        
+        // If content is empty, remove the bullet and exit list mode
+        if (!content.trim()) {
+          e.preventDefault();
+          const newValue = currentValue.slice(0, lineStart) + '\n' + currentValue.slice(start);
+          onChange(newValue);
+          setTimeout(() => {
+            textarea.setSelectionRange(lineStart + 1, lineStart + 1);
+          }, 0);
+          return;
+        }
+        
+        // Continue the list
+        e.preventDefault();
+        const newLine = `\n${indent}${bullet} `;
+        const newValue = currentValue.slice(0, start) + newLine + currentValue.slice(start);
+        onChange(newValue);
+        setTimeout(() => {
+          const newPos = start + newLine.length;
+          textarea.setSelectionRange(newPos, newPos);
+        }, 0);
+        return;
+      }
+      
+      // Check for ordered list
+      if (orderedMatch) {
+        const [, indent, num, content] = orderedMatch;
+        
+        // If content is empty, remove the number and exit list mode
+        if (!content.trim()) {
+          e.preventDefault();
+          const newValue = currentValue.slice(0, lineStart) + '\n' + currentValue.slice(start);
+          onChange(newValue);
+          setTimeout(() => {
+            textarea.setSelectionRange(lineStart + 1, lineStart + 1);
+          }, 0);
+          return;
+        }
+        
+        // Continue with next number
+        e.preventDefault();
+        const nextNum = parseInt(num) + 1;
+        const newLine = `\n${indent}${nextNum}. `;
+        const newValue = currentValue.slice(0, start) + newLine + currentValue.slice(start);
+        onChange(newValue);
+        setTimeout(() => {
+          const newPos = start + newLine.length;
+          textarea.setSelectionRange(newPos, newPos);
+        }, 0);
+        return;
+      }
     }
   }, [value, onChange]);
 
   useEffect(() => {
     if (onInsert) {
-      onInsert.current = { insert: handleInsert, format: handleFormatText };
+      onInsert.current = { 
+        insert: handleInsert, 
+        format: handleFormatText,
+        getSelection: () => {
+          const textarea = textareaRef.current;
+          if (!textarea) return null;
+          return {
+            text: textarea.value.substring(textarea.selectionStart, textarea.selectionEnd),
+            start: textarea.selectionStart,
+            end: textarea.selectionEnd
+          };
+        }
+      };
     }
   }, [onInsert, handleInsert, handleFormatText]);
 
@@ -184,7 +346,7 @@ export default function MarkdownEditor({ value, onChange, onInsert, isDarkMode }
           tabSize: 4
         }}
         value={value || ''}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={handleChange}
         onKeyDown={handleKeyDown}
         onPaste={handlePaste}
         onDrop={handleDrop}
