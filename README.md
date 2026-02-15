@@ -1,4 +1,4 @@
-![](https://ibb.co/0pVHSmzz)
+<img src="https://ibb.co/0pVHSmzz">
 <h1> Vertex - Fast and Powerful Static Site Generator </h1>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
