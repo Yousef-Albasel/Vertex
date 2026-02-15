@@ -8,6 +8,9 @@ const nunjucks = require('nunjucks');
 const { config } = require('process');
 
 
+// Track whether the current file being rendered contains shaders
+let currentFileHasShaders = false;
+
 const md = MarkdownIt({
   html: true,
   linkify: true,
@@ -24,6 +27,40 @@ const md = MarkdownIt({
     return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + '</code></pre>';
   }
 });
+
+// Override fence renderer to handle glsl-canvas blocks
+const defaultFenceRenderer = md.renderer.rules.fence.bind(md.renderer.rules);
+md.renderer.rules.fence = function(tokens, idx, options, env, self) {
+  const token = tokens[idx];
+  const info = token.info ? token.info.trim() : '';
+
+  if (info === 'glsl-canvas') {
+    currentFileHasShaders = true;
+    const code = token.content;
+    const highlighted = hljs.getLanguage('glsl')
+      ? hljs.highlight(code, { language: 'glsl', ignoreIllegals: true }).value
+      : md.utils.escapeHtml(code);
+    return '<div class="shader-container">'
+      + '<div class="shader-editor-pane">'
+      + '<div class="shader-editor-header">GLSL Fragment Shader</div>'
+      + '<textarea class="shader-editor" spellcheck="false">'
+      + md.utils.escapeHtml(code)
+      + '</textarea>'
+      + '</div>'
+      + '<div class="shader-canvas-pane">'
+      + '<canvas class="shader-canvas" width="600" height="400"></canvas>'
+      + '<button class="shader-pause-btn" title="Pause">&#9208;</button>'
+      + '<div class="shader-status"><span class="shader-status-dot"></span><span class="shader-status-text">Running</span></div>'
+      + '</div>'
+      + '<script type="x-shader/x-fragment" class="shader-source">'
+      + code
+      + '<\/script>'
+      + '</div>\n';
+  }
+
+  return defaultFenceRenderer(tokens, idx, options, env, self);
+};
+
 
 // Get the theme directory based on config
 function getThemeDir(projectDir, themeName) {
@@ -214,6 +251,9 @@ async function processMarkdownFiles(projectDir) {
 async function processMarkdownFile(filePath, filename, seriesSlug = null) {
     const fileContent = await fs.readFile(filePath, "utf8");
     const { data: frontMatter, content } = matter(fileContent);
+    
+    // Reset shader detection flag before rendering
+    currentFileHasShaders = false;
     const htmlContent = md.render(content);
     
     const slug = path.basename(filename, '.md');
@@ -230,6 +270,7 @@ async function processMarkdownFile(filePath, filename, seriesSlug = null) {
         frontMatter,
         series: seriesSlug,
         order: frontMatter.order || 0,
+        hasShaders: currentFileHasShaders,
         ...frontMatter
     };
     
@@ -330,6 +371,7 @@ async function processPages(projectDir) {
 }
 
 async function generatePostPages(posts, env, config, outputDir) {
+    const shaderCanvasEnabled = config.features?.shaderCanvas !== false;
     for (const post of posts) {
         const templateName = `${post.layout}.html`;
         
@@ -342,6 +384,7 @@ async function generatePostPages(posts, env, config, outputDir) {
             // Render the post using its specified layout
             const html = env.render(templateName, {
                 ...post,
+                hasShaders: shaderCanvasEnabled && post.hasShaders,
                 site: config
             });
             
@@ -382,12 +425,14 @@ async function generateSeriesPages(series, env, config, outputDir) {
 }
 
 async function generatePageFiles(pages, env, config, outputDir) {
+    const shaderCanvasEnabled = config.features?.shaderCanvas !== false;
     for (const page of pages) {
         const templateName = `${page.layout}.html`;
         
         try {
             const html = env.render(templateName, {
                 ...page,
+                hasShaders: shaderCanvasEnabled && page.hasShaders,
                 site: config
             });
             

@@ -34,6 +34,14 @@ Vertex is a static site generator originally created to support computer graphic
 - **Integrated file manager** — create, rename, delete files and folders; sidebar with file tree
 - **Dark mode** — toggle between light and dark editor UI
 
+### Live GLSL Shader Canvas
+- **Interactive shader playground** — write GLSL fragment shaders in markdown using ` ```glsl-canvas ` code blocks; rendered as a side-by-side editable code editor + live WebGL canvas on the served site
+- **Live recompilation** — edit shader code directly on the page and see results update in real-time (400ms debounce)
+- **Built-in uniforms** — `u_time` (elapsed seconds), `u_resolution` (canvas size), `u_mouse` (normalized cursor position)
+- **Editor integration** — toolbar button inserts a starter shader template; live preview renders shaders while editing
+- **Performance** — shaders auto-pause when scrolled off-screen via IntersectionObserver
+- **Optional** — disable via `features.shaderCanvas: false` in `config.json`
+
 ### Keyboard Shortcuts
 
 | Shortcut | Action |

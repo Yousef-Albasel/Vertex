@@ -6,6 +6,9 @@
     <title>{{ title }} - {{ site.name }}</title>
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% if hasShaders %}
+    <link rel="stylesheet" href="/css/shader.css">
+    {% endif %}
     <style>
         .series-info {
             background: #333;
@@ -214,5 +217,8 @@
         });
     });
     </script>
+    {% if hasShaders %}
+    <script src="/js/shader-renderer.js"></script>
+    {% endif %}
 </body>
 </html>

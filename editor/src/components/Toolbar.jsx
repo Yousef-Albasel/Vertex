@@ -22,7 +22,8 @@ import {
   SidebarOpen,
   ChevronDown,
   FileDown,
-  Sparkles
+  Sparkles,
+  Monitor
 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
@@ -271,6 +272,11 @@ export default function Toolbar({
   const handleCodeBlock = () => {
     onFormatText('codeblock');
   };
+
+  const handleInsertShader = () => {
+    const template = '\n```glsl-canvas\n#ifdef GL_ES\nprecision mediump float;\n#endif\n\nuniform vec2 u_resolution;\nuniform float u_time;\n\nvoid main() {\n    vec2 uv = gl_FragCoord.xy / u_resolution;\n    vec3 col = 0.5 + 0.5 * cos(u_time + uv.xyx + vec3(0, 2, 4));\n    gl_FragColor = vec4(col, 1.0);\n}\n```\n';
+    onInsert(template);
+  };
   
   return (
     <div className={`flex items-center gap-1 p-2 border-b flex-wrap ${
@@ -308,6 +314,20 @@ export default function Toolbar({
           <item.icon size={16} />
         </button>
       ))}
+
+      {/* Shader Insert Button */}
+      <button
+        onClick={handleInsertShader}
+        className={`p-2 rounded transition-colors ${
+          isDarkMode
+            ? 'hover:bg-gray-700 text-emerald-400'
+            : 'hover:bg-gray-200 text-emerald-600'
+        }`}
+        title="Insert GLSL Shader Canvas"
+        disabled={!selectedFile}
+      >
+        <Monitor size={16} />
+      </button>
       
       {/* Bullet Style Dropdown */}
       <div className="relative" ref={bulletDropdownRef}>

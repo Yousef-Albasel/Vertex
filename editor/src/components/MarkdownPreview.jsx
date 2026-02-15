@@ -3,6 +3,7 @@ import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark, oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
 import matter from "gray-matter";
+import ShaderPreview from "./ShaderPreview";
 
 const CodeBlock = memo(({ language, value, isDarkMode }) => (
   <div className="relative w-full overflow-hidden my-3">
@@ -28,8 +29,9 @@ const CodeBlock = memo(({ language, value, isDarkMode }) => (
 
 const createComponents = (isDarkMode) => ({
   code({ inline, className, children, ...props }) {
-    const match = /language-(\w+)/.exec(className || "");
+    const match = /language-(\w[\w-]*)/.exec(className || "");
     const codeString = String(children).replace(/\n$/, "");
+
     if (inline) {
       return (
         <code
@@ -42,6 +44,12 @@ const createComponents = (isDarkMode) => ({
         </code>
       );
     }
+
+    // Render glsl-canvas blocks as live shader previews
+    if (match?.[1] === 'glsl-canvas') {
+      return <ShaderPreview shaderSource={codeString} isDarkMode={isDarkMode} />;
+    }
+
     return <CodeBlock language={match?.[1]} value={codeString} isDarkMode={isDarkMode} />;
   },
   h1: ({ children }) => <h1 className={`text-2xl font-bold mt-4 mb-2 break-words ${isDarkMode ? "text-gray-100" : "text-gray-900"}`}>{children}</h1>,
