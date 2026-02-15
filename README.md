@@ -1,4 +1,4 @@
-<img src="https://i.ibb.co/Gf3zLnrr/vertex.png">
+<img src="https://i.ibb.co/twPVtQ11/vertex.png">
 
 <h1> Vertex - Fast and Powerful Static Site Generator </h1>
 
