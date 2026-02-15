@@ -1,4 +1,4 @@
-<img width="1920" height="648" alt="a gradient white and purplish background with some icons and modern design on it to act as a background for designing a poster for a github repo, it needs not to have any text one it with a _V_ shaped ab (2)" src="https://github.com/user-attachments/assets/9a160921-49dc-4fd2-936a-07831b39d789" />
+<img width="1920" height="648" alt="vertex editor" src="https://ibb.co/0pVHSmzz" />
 
 <h1> Vertex - Fast and Powerful Static Site Generator </h1>
 
