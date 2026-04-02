@@ -1,5 +1,4 @@
-<img src="https://i.ibb.co/Gf3zLnrr/vertex.png">
-
+![](vertex.png)
 <h1> Vertex - Fast and Powerful Static Site Generator </h1>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
