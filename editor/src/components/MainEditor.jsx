@@ -3,6 +3,7 @@ import MarkdownEditor from './MarkdownEditor.jsx';
 import PreviewPane from './MarkdownPreview.jsx';
 import Toolbar from './Toolbar.jsx';
 import AIModal from './AIModal.jsx';
+import ThumbnailModal from './ThumbnailModal.jsx';
 import { getSuggestion } from '../services/aiService.js';
 
 const MainEditor = ({ 
@@ -34,6 +35,9 @@ const MainEditor = ({
   const [aiOriginal, setAIOriginal] = useState('');
   const [aiIsFullDocument, setAIIsFullDocument] = useState(false);
   const [selectionRange, setSelectionRange] = useState(null);
+
+  // Thumbnail Modal state
+  const [thumbnailModalOpen, setThumbnailModalOpen] = useState(false);
 
   // Handle text formatting
   const handleFormatText = (format) => {
@@ -113,6 +117,27 @@ const MainEditor = ({
     setAIModalOpen(false);
   };
 
+  const handleThumbnailSelect = (imagePath) => {
+    if (!selectedFile?.content) return;
+    
+    let content = selectedFile.content;
+    // We update the 'image' property as requested
+    const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+    if (match) {
+      let frontmatter = match[1];
+      if (/^image:/m.test(frontmatter)) {
+        frontmatter = frontmatter.replace(/^image:.*$/m, `image: "${imagePath}"`);
+      } else {
+        frontmatter += `\nimage: "${imagePath}"`;
+      }
+      content = content.replace(match[0], `---\n${frontmatter}\n---`);
+    } else {
+      content = `---\nimage: "${imagePath}"\n---\n\n${content}`;
+    }
+    
+    onContentChange(content);
+  };
+
   const handleMouseDown = useCallback((e) => {
     e.preventDefault();
     isDraggingRef.current = true;
@@ -157,6 +182,7 @@ const MainEditor = ({
         selectedFile={selectedFile}
         hasModifiedFiles={hasModifiedFiles}
         onAIRequest={handleAIRequest}
+        onSetThumbnail={() => setThumbnailModalOpen(true)}
       />
       
       <div ref={containerRef} className="flex-1 flex min-h-0 min-w-0 overflow-hidden">
@@ -223,6 +249,14 @@ const MainEditor = ({
         onAccept={handleAcceptAI}
         isDarkMode={isDarkMode}
         isFullDocument={aiIsFullDocument}
+      />
+
+      {/* Thumbnail Modal */}
+      <ThumbnailModal
+        isOpen={thumbnailModalOpen}
+        onClose={() => setThumbnailModalOpen(false)}
+        onSelectThumbnail={handleThumbnailSelect}
+        isDarkMode={isDarkMode}
       />
     </div>
   );

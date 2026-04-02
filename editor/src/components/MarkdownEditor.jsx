@@ -1,9 +1,149 @@
 import { useState, useRef, useCallback, useEffect, memo } from "react";
+import FindReplace from "./FindReplace.jsx";
 
 export default function MarkdownEditor({ value, onChange, onInsert, isDarkMode, onCursorPosition }) {
   const textareaRef = useRef(null);
+  const backdropRef = useRef(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
+
+  // Find and Replace State
+  const [showFindReplace, setShowFindReplace] = useState(false);
+  const [isReplaceMode, setIsReplaceMode] = useState(false);
+  const [findText, setFindText] = useState("");
+  const [replaceText, setReplaceText] = useState("");
+  const [matches, setMatches] = useState([]);
+  const [currentMatchIndex, setCurrentMatchIndex] = useState(-1);
+
+  // Focus Find UI when opened, handle matches updates
+  useEffect(() => {
+    if (!findText) {
+      setMatches([]);
+      setCurrentMatchIndex(-1);
+      return;
+    }
+
+    const valueStr = value || '';
+    const newMatches = [];
+    let startIndex = 0;
+    
+    // Case-insensitive search by default
+    const lowerValueStr = valueStr.toLowerCase();
+    const lowerFindText = findText.toLowerCase();
+
+    while ((startIndex = lowerValueStr.indexOf(lowerFindText, startIndex)) > -1) {
+      newMatches.push({ start: startIndex, end: startIndex + findText.length });
+      startIndex += findText.length;
+    }
+
+    setMatches(newMatches);
+    if (newMatches.length > 0) {
+      setCurrentMatchIndex(prev => prev >= newMatches.length ? 0 : Math.max(0, prev));
+    } else {
+      setCurrentMatchIndex(-1);
+    }
+  }, [value, findText]);
+
+  const isHighlighting = showFindReplace && findText && matches.length > 0;
+
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      // Find and Replace shortcuts (Global - capture phase to guarantee interception)
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F')) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (textareaRef.current) {
+          const ta = textareaRef.current;
+          const selection = ta.value.substring(ta.selectionStart, ta.selectionEnd);
+          if (selection) setFindText(selection);
+        }
+        setShowFindReplace(true);
+        setIsReplaceMode(false);
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === 'h' || e.key === 'H')) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (textareaRef.current) {
+          const ta = textareaRef.current;
+          const selection = ta.value.substring(ta.selectionStart, ta.selectionEnd);
+          if (selection) setFindText(selection);
+        }
+        setShowFindReplace(true);
+        setIsReplaceMode(true);
+      }
+    };
+    
+    // Attach listener globally on window with capture to guarantee we beat browser native shortcuts
+    window.addEventListener('keydown', handleGlobalKeyDown, { capture: true });
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown, { capture: true });
+  }, []);
+
+  useEffect(() => {
+    if (isHighlighting && currentMatchIndex >= 0 && textareaRef.current) {
+      const match = matches[currentMatchIndex];
+      if (match) {
+        textareaRef.current.setSelectionRange(match.start, match.end);
+      }
+
+      const timer = setTimeout(() => {
+        const markElement = document.getElementById(`match-${currentMatchIndex}`);
+        if (markElement && textareaRef.current) {
+          const offsetTop = markElement.offsetTop;
+          const ta = textareaRef.current;
+          
+          if (ta.scrollTop > offsetTop - 20 || ta.scrollTop + ta.clientHeight < offsetTop + 40) {
+            ta.scrollTop = Math.max(0, offsetTop - ta.clientHeight / 2);
+          }
+        }
+      }, 10);
+      return () => clearTimeout(timer);
+    }
+  }, [currentMatchIndex, isHighlighting, matches]);
+
+  const handleNextMatch = () => {
+    if (matches.length === 0) return;
+    setCurrentMatchIndex(prev => (prev + 1) % matches.length);
+  };
+
+  const handlePrevMatch = () => {
+    if (matches.length === 0) return;
+    setCurrentMatchIndex(prev => (prev - 1 + matches.length) % matches.length);
+  };
+
+  const handleReplaceCurrent = () => {
+    if (matches.length === 0 || currentMatchIndex < 0) return;
+    const { start, end } = matches[currentMatchIndex];
+    const currentValue = value || '';
+    const newValue = currentValue.slice(0, start) + replaceText + currentValue.slice(end);
+    onChange(newValue);
+    // Since value changes, useEffect will re-calculate matches and adjust indices automatically.
+  };
+
+  const handleReplaceAll = () => {
+    if (matches.length === 0) return;
+    const currentValue = value || '';
+
+    // Replace from the end to the beginning to preserve offsets
+    let newValue = currentValue;
+    for (let i = matches.length - 1; i >= 0; i--) {
+      const { start, end } = matches[i];
+      newValue = newValue.slice(0, start) + replaceText + newValue.slice(end);
+    }
+    onChange(newValue);
+  };
+
+  const handleFindReplaceKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      setShowFindReplace(false);
+      textareaRef.current?.focus();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (e.shiftKey) {
+        handlePrevMatch();
+      } else {
+        handleNextMatch();
+      }
+    }
+  };
 
   // Detect cursor position when typing
   const handleChange = useCallback((e) => {
@@ -317,8 +457,44 @@ export default function MarkdownEditor({ value, onChange, onInsert, isDarkMode, 
     }
   }, [onInsert, handleInsert, handleFormatText]);
 
+  const renderHighlightedText = () => {
+    if (!value) return '';
+    if (!isHighlighting) return value;
+    
+    const parts = [];
+    let lastIndex = 0;
+
+    matches.forEach((match, i) => {
+      parts.push(value.slice(lastIndex, match.start));
+      const isCurrent = (i === currentMatchIndex);
+      parts.push(
+        <mark 
+          key={i} 
+          id={`match-${i}`}
+          className={`rounded ${isCurrent ? 'bg-orange-500 text-white' : 'bg-yellow-300 text-black'}`}
+        >
+          {value.slice(match.start, match.end)}
+        </mark>
+      );
+      lastIndex = match.end;
+    });
+    parts.push(value.slice(lastIndex));
+    
+    if (value.endsWith('\n')) {
+      parts.push(<br key="br" />);
+    }
+    return parts;
+  };
+
+  const handleScroll = useCallback((e) => {
+    if (backdropRef.current) {
+      backdropRef.current.scrollTop = e.target.scrollTop;
+      backdropRef.current.scrollLeft = e.target.scrollLeft;
+    }
+  }, []);
+
   return (
-    <div className="relative h-full">
+    <div className={`relative h-full ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'}`}>
       {(uploadingImage || uploadStatus) && (
         <div className={`absolute top-2 right-2 z-10 px-3 py-1 rounded text-sm shadow-lg ${
           uploadStatus.includes('✓') 
@@ -328,12 +504,55 @@ export default function MarkdownEditor({ value, onChange, onInsert, isDarkMode, 
               : 'bg-blue-500 text-white'
         }`}>{uploadStatus}</div>
       )}
+      
+      <FindReplace 
+        isDarkMode={isDarkMode}
+        isOpen={showFindReplace}
+        onClose={() => {
+          setShowFindReplace(false);
+          textareaRef.current?.focus();
+        }}
+        isReplaceMode={isReplaceMode}
+        findText={findText}
+        replaceText={replaceText}
+        onFindChange={setFindText}
+        onReplaceChange={setReplaceText}
+        onNext={handleNextMatch}
+        onPrev={handlePrevMatch}
+        onReplace={handleReplaceCurrent}
+        onReplaceAll={handleReplaceAll}
+        matchCount={matches.length}
+        currentMatch={currentMatchIndex}
+        onKeyDown={handleFindReplaceKeyDown}
+      />
+
+      {isHighlighting && (
+        <div 
+          ref={backdropRef}
+          className="absolute inset-0 w-full h-full p-4 border-none font-mono text-sm pointer-events-none break-words whitespace-pre-wrap outline-none resize-none transition-colors"
+          style={{
+            wordWrap: 'break-word',
+            whiteSpace: 'pre-wrap',
+            overflowWrap: 'break-word',
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            minHeight: '100%',
+            boxSizing: 'border-box',
+            tabSize: 4,
+            color: isDarkMode ? '#f3f4f6' : '#111827',
+          }}
+          aria-hidden="true"
+        >
+          {renderHighlightedText()}
+        </div>
+      )}
+
       <textarea
         ref={textareaRef}
-        className={`w-full h-full p-4 border-none outline-none font-mono text-sm resize-none transition-colors ${
-          isDarkMode 
-            ? 'bg-gray-900 text-gray-100 placeholder-gray-400' 
-            : 'bg-white text-gray-900 placeholder-gray-500'
+        className={`absolute inset-0 w-full h-full p-4 border-none outline-none font-mono text-sm resize-none transition-colors ${
+          isHighlighting 
+            ? 'bg-transparent placeholder-transparent'
+            : (isDarkMode ? 'bg-gray-900 text-gray-100 placeholder-gray-400' : 'bg-white text-gray-900 placeholder-gray-500')
         }`}
         style={{
           wordWrap: 'break-word',
@@ -343,10 +562,16 @@ export default function MarkdownEditor({ value, onChange, onInsert, isDarkMode, 
           overflowX: 'hidden',
           minHeight: '100%',
           boxSizing: 'border-box',
-          tabSize: 4
+          tabSize: 4,
+          ...(isHighlighting ? {
+             color: 'transparent',
+             WebkitTextFillColor: 'transparent',
+             caretColor: isDarkMode ? '#f3f4f6' : '#111827'
+          } : {})
         }}
         value={value || ''}
         onChange={handleChange}
+        onScroll={handleScroll}
         onKeyDown={handleKeyDown}
         onPaste={handlePaste}
         onDrop={handleDrop}

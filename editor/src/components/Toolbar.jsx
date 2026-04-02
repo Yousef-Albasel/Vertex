@@ -6,6 +6,7 @@ import {
   ListOrdered, 
   Link, 
   Image, 
+  ImagePlus,
   Code, 
   Quote, 
   Heading1, 
@@ -40,7 +41,8 @@ export default function Toolbar({
   onToggleSidebar,
   selectedFile,
   hasModifiedFiles,
-  onAIRequest
+  onAIRequest,
+  onSetThumbnail
 }) {
   const [bulletDropdownOpen, setBulletDropdownOpen] = useState(false);
   const [aiDropdownOpen, setAIDropdownOpen] = useState(false);
@@ -254,6 +256,12 @@ export default function Toolbar({
     action: handleImageUpload,
     tooltip: 'Upload Image (or paste from clipboard)',
     shortcut: null
+    },
+    { 
+      icon: ImagePlus, 
+      action: onSetThumbnail, 
+      tooltip: 'Set Thumbnail',
+      shortcut: null
     },
     { 
       icon: Code, 
